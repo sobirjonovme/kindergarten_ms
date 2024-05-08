@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
 
-from apps.users.models import User
+from apps.users.models import FaceIDLog, User
 
 
 @admin.register(User)
@@ -58,3 +58,18 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
+
+
+@admin.register(FaceIDLog)
+class FaceIDLogAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "time",
+    )
+    list_display_links = ("id", "user", "time")
+    search_fields = ("id", "user__username", "user__first_name", "user__last_name")
+    list_filter = ("created_at",)
+    ordering = ("-id",)
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "time"

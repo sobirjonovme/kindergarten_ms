@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.common.models import BaseModel
@@ -28,3 +29,15 @@ class User(AbstractUser, BaseModel):
 
     def __str__(self):
         return self.username
+
+
+class FaceIDLog(BaseModel):
+    user = models.ForeignKey(verbose_name=_("User"), to="users.User", on_delete=models.CASCADE)
+    time = models.DateTimeField(_("Time"), default=timezone.now)
+
+    class Meta:
+        verbose_name = _("Face ID Log")
+        verbose_name_plural = _("Face ID Logs")
+
+    def __str__(self):
+        return f"FaceID | {self.user}"

@@ -9,3 +9,16 @@ class UserTypes(models.TextChoices):
     EDUCATOR = "educator", _("Educator")
     KINDERGARTENER = "kindergartener", _("Kindergartener")
     WORKER = "worker", _("Worker")
+
+    @classmethod
+    def get_student_types(cls):
+        return [cls.STUDENT.value, cls.KINDERGARTENER.value]
+
+    @classmethod
+    def get_worker_types(cls):
+        return [cls.TEACHER.value, cls.EDUCATOR.value, cls.WORKER.value]
+
+
+class UserShortTypes(models.TextChoices):
+    STUDENT = "student", _("Student")
+    WORKER = "worker", _("Worker")
