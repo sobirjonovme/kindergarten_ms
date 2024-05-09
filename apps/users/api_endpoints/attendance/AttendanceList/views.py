@@ -11,9 +11,14 @@ from .serializers import AttendanceListSerializer, DateSerializer
 
 class AttendanceListAPIView(ListAPIView):
     serializer_class = AttendanceListSerializer
+    # pagination_class = None
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = UserFilter
+
+    # custom attribute to store the total amount of present users
+    total_users = 0
+    total_present_users = 0
 
     def get_queryset(self):
         users_qs = User.objects.all()
@@ -26,11 +31,26 @@ class AttendanceListAPIView(ListAPIView):
         face_id_logs = FaceIDLog.objects.filter(time__date=date)
         users_qs = users_qs.annotate(is_present=models.Exists(face_id_logs.filter(user=models.OuterRef("id"))))
 
+        # calculate the total amount of present users
+        self.total_users = users_qs.count()
+        self.total_present_users = users_qs.filter(is_present=True).count()
+
         return users_qs
 
     @swagger_auto_schema(manual_parameters=ATTENDANCE_FILTER_PARAMETERS)
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        res = super().get(request, *args, **kwargs)
+
+        if isinstance(res.data, list):
+            res.data = {
+                "total_users": self.total_users,
+                "total_present_users": self.total_present_users,
+                "data": res.data,
+            }
+        elif isinstance(res.data, dict):
+            res.data = {"total_presences": self.total_present_users, **res.data}
+
+        return res
 
 
 __all__ = ["AttendanceListAPIView"]
