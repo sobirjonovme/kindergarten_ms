@@ -15,7 +15,14 @@ class MonthlyPayment(BaseModel):
     """
 
     type = models.CharField(verbose_name=_("Type"), max_length=31, choices=MonthlyPaymentTypes.choices)
-    user = models.ForeignKey(verbose_name=_("User"), to="users.User", on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(
+        verbose_name=_("User"),
+        to="users.User",
+        on_delete=models.SET_NULL,
+        related_name="monthly_payments",
+        null=True,
+        blank=True,
+    )
     amount = models.DecimalField(verbose_name=_("Amount"), max_digits=13, decimal_places=2)
     paid_month = models.DateField(verbose_name=_("Paid Date"), default=timezone.now)
     is_completed = models.BooleanField(verbose_name=_("Is Completed"), default=False)
