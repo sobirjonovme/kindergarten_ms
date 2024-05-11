@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.users.models import FaceIDLog, User
+from apps.users.permissions import IsAdminUser
 
 from .serializers import YearMonthSerializer
 
@@ -16,6 +17,8 @@ FILTER_PARAMETERS = [
 
 
 class UserMonthlyAttendanceAPIView(APIView):
+    permission_classes = (IsAdminUser,)
+
     @swagger_auto_schema(manual_parameters=FILTER_PARAMETERS)
     def get(self, request, pk, *args, **kwargs):
         user = get_object_or_404(User, pk=pk)

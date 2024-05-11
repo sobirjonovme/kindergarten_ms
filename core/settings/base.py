@@ -48,6 +48,7 @@ DJANGO_APPS = [
 ]
 
 CUSTOM_APPS = [
+    "apps.accounting",
     "apps.common",
     "apps.organizations",
     "apps.users",

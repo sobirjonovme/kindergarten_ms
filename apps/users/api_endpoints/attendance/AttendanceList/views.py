@@ -5,13 +5,15 @@ from rest_framework.generics import ListAPIView
 
 from apps.users.filters import ATTENDANCE_FILTER_PARAMETERS, UserFilter
 from apps.users.models import FaceIDLog, User
+from apps.users.permissions import IsAdminUser
 
 from .serializers import AttendanceListSerializer, DateSerializer
 
 
 class AttendanceListAPIView(ListAPIView):
     serializer_class = AttendanceListSerializer
-    # pagination_class = None
+    pagination_class = None
+    permission_classes = (IsAdminUser,)
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = UserFilter
