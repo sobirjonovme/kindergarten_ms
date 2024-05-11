@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .api_endpoints import (AttendanceListAPIView, CustomTokenObtainPairView,
-                            MyProfileAPIView)
+                            MyProfileAPIView, UserMonthlyAttendanceAPIView)
 
 app_name = "users"
 
@@ -12,4 +12,5 @@ urlpatterns = [
     path("profile/", MyProfileAPIView.as_view(), name="my-profile"),
     # attendance
     path("attendance/list/", AttendanceListAPIView.as_view(), name="attendance-list"),
+    path("<int:pk>/monthly-attendance/", UserMonthlyAttendanceAPIView.as_view(), name="user-monthly-attendance"),
 ]
