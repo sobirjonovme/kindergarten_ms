@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -34,3 +35,15 @@ class MonthlyPayment(BaseModel):
 
     def __str__(self):
         return f"Fee #{self.id} - {self.user}"
+
+    def clean(self):
+        # Check if there is existing payment for the user in the same month
+        if MonthlyPayment.objects.filter(
+            user=self.user, paid_month__year=self.paid_month.year, paid_month__month=self.paid_month.month
+        ).exists():
+            raise ValidationError(
+                message={
+                    "user": _("User already has a payment for this month"),
+                    "paid_month": _("User already has a payment for this month"),
+                }
+            )

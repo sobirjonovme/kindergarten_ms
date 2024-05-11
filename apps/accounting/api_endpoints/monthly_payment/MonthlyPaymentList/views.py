@@ -26,8 +26,9 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
     """
 
     serializer_class = UsersMonthlyPaymentListSerializer
-
     permission_classes = (IsAdminUser,)
+
+    total_payment = 0
 
     def get_queryset(self):
         users = User.objects.all()
@@ -40,11 +41,26 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
             ),
         )
 
+        # calculate total amount of payment
+        self.total_payment = YearMonthFilter(
+            data=self.request.query_params, queryset=MonthlyPayment.objects.filter(user__in=users)
+        ).qs.aggregate(total_payment=models.Sum("amount"))["total_payment"]
+
         return users
 
     @swagger_auto_schema(manual_parameters=USERS_PAYMENT_FILTER_PARAMETERS)
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        res = super().get(request, *args, **kwargs)
+
+        if isinstance(res.data, list):
+            res.data = {
+                "total_payment": self.total_payment,
+                "data": res.data,
+            }
+        elif isinstance(res.data, dict):
+            res.data = {"total_payment": self.total_payment, **res.data}
+
+        return res
 
 
 __all__ = ["UsersMonthlyPaymentListAPIView"]

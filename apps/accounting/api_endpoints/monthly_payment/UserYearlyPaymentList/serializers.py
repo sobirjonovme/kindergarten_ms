@@ -4,8 +4,8 @@ from apps.accounting.serializers import MonthlyPaymentListSerializer
 from apps.users.models import User
 
 
-class UsersMonthlyPaymentListSerializer(serializers.ModelSerializer):
-    monthly_payments = MonthlyPaymentListSerializer(many=True)
+class UserYearlyPaymentListSerializer(serializers.ModelSerializer):
+    monthly_payments = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -17,4 +17,7 @@ class UsersMonthlyPaymentListSerializer(serializers.ModelSerializer):
             "type",
             "monthly_payments",
         )
-        ref_name = "UsersMonthlyPaymentListSerializer"
+        ref_name = "UserYearlyPaymentListSerializer"
+
+    def get_monthly_payments(self, obj):
+        return MonthlyPaymentListSerializer(self.context.get("payments"), many=True).data

@@ -13,7 +13,19 @@ class YearMonthFilter(filters.FilterSet):
         fields = ("year", "month")
 
 
+class YearFilter(filters.FilterSet):
+    year = filters.NumberFilter(field_name="paid_month__year")
+
+    class Meta:
+        model = MonthlyPayment
+        fields = ("year",)
+
+
 YEAR_MONTH_FILTER_PARAMETERS = [
     openapi.Parameter("year", openapi.IN_QUERY, description="Year", type=openapi.TYPE_INTEGER, required=True),
     openapi.Parameter("month", openapi.IN_QUERY, description="Month", type=openapi.TYPE_INTEGER, required=True),
+]
+
+YEAR_FILTER_PARAMETERS = [
+    openapi.Parameter("year", openapi.IN_QUERY, description="Year", type=openapi.TYPE_INTEGER, required=True),
 ]

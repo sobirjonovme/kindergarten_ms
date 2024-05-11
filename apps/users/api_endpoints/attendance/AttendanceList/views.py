@@ -25,10 +25,8 @@ class AttendanceListAPIView(ListAPIView):
     def get_queryset(self):
         users_qs = User.objects.all()
 
-        # check if date query parameter is present
-        date_serializer = DateSerializer(data=self.request.query_params)
-        date_serializer.is_valid(raise_exception=True)
-        date = date_serializer.validated_data["date"]
+        # get date query parameter
+        date = self.request.query_params.get("date")
         # Add is_present field to each user
         face_id_logs = FaceIDLog.objects.filter(time__date=date)
         users_qs = users_qs.annotate(is_present=models.Exists(face_id_logs.filter(user=models.OuterRef("id"))))
@@ -41,6 +39,10 @@ class AttendanceListAPIView(ListAPIView):
 
     @swagger_auto_schema(manual_parameters=ATTENDANCE_FILTER_PARAMETERS)
     def get(self, request, *args, **kwargs):
+        # check if date query parameter is present and valid
+        date_serializer = DateSerializer(data=self.request.query_params)
+        date_serializer.is_valid(raise_exception=True)
+
         res = super().get(request, *args, **kwargs)
 
         if isinstance(res.data, list):

@@ -1,4 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.accounting.models import MonthlyPayment
@@ -23,6 +24,19 @@ class MonthlyPaymentCreateSerializer(serializers.ModelSerializer):
             "is_completed",
             "comment",
         )
+
+    def validate(self, attrs):
+        year = attrs.get("year")
+        month = attrs.get("month")
+        user = self.context["request"].user
+
+        if MonthlyPayment.objects.filter(user=user, paid_month__year=year, paid_month__month=month).exists():
+            raise serializers.ValidationError(
+                code="already_exists",
+                detail={"monthly_payment": _("Monthly payment for this month already exists.")},
+            )
+
+        return attrs
 
     def create(self, validated_data):
         year = validated_data.pop("year")
