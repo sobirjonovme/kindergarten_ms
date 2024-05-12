@@ -58,6 +58,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "drf_yasg",
     "corsheaders",
+    "django_celery_beat",
 ]
 
 REST_FRAMEWORK = {
@@ -180,7 +181,7 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": f"{env.str('REDIS_URL', 'redis://localhost:6379/0')}",
-        "KEY_PREFIX": "django_boilerplate",  # todo: you must change this with your project name or something else
+        "KEY_PREFIX": "kindergarten_ms",  # todo: you must change this with your project name or something else
     }
 }
 

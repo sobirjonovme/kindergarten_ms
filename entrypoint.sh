@@ -11,6 +11,12 @@ then
     echo "PostgreSQL started"
 fi
 
+#until python manage.py migrate
+#do
+#    echo "Waiting for db to be ready..."
+#    sleep 2
+#done
+
 python manage.py migrate
 python manage.py collectstatic --noinput
 
