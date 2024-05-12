@@ -12,7 +12,7 @@ from .serializers import AttendanceListSerializer, DateSerializer
 
 class AttendanceListAPIView(ListAPIView):
     serializer_class = AttendanceListSerializer
-    pagination_class = None
+    # pagination_class = None
     permission_classes = (IsAdminUser,)
 
     filter_backends = (DjangoFilterBackend,)
