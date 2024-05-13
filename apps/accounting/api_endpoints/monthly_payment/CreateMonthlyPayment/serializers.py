@@ -17,6 +17,7 @@ class MonthlyPaymentCreateSerializer(serializers.ModelSerializer):
         model = MonthlyPayment
         fields = (
             "id",
+            "user",
             "type",
             "amount",
             "year",
