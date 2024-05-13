@@ -47,3 +47,43 @@ class MonthlyPayment(BaseModel):
                     "paid_month": _("User already has a payment for this month"),
                 }
             )
+
+
+class ExpenseType(BaseModel):
+    """
+    Model to store expense types
+    """
+
+    name = models.CharField(verbose_name=_("Name"), max_length=127, unique=True)
+
+    class Meta:
+        verbose_name = _("Expense Type")
+        verbose_name_plural = _("Expense Types")
+
+    def __str__(self):
+        return self.name
+
+
+class Expense(BaseModel):
+    """
+    Model to store expenses (outgoing money)
+    """
+
+    type = models.ForeignKey(
+        verbose_name=_("Type"),
+        to=ExpenseType,
+        on_delete=models.SET_NULL,
+        related_name="expenses",
+        null=True,
+        blank=True,
+    )
+    amount = models.DecimalField(verbose_name=_("Amount"), max_digits=13, decimal_places=2)
+    date = models.DateField(verbose_name=_("Date"), default=timezone.now)
+    comment = models.TextField(verbose_name=_("Comment"), blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Expense")
+        verbose_name_plural = _("Expenses")
+
+    def __str__(self):
+        return f"Expense #{self.id} - {self.type}"

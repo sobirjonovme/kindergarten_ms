@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import MonthlyPayment
+from .models import Expense, ExpenseType, MonthlyPayment
 
 
 # Register your models here.
@@ -20,3 +20,21 @@ class MonthlyPaymentAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         qs = qs.select_related("user")
         return qs
+
+
+@admin.register(ExpenseType)
+class ExpenseTypeAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    list_display_links = ("id", "name")
+    search_fields = ("name",)
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Expense)
+class ExpenseAdmin(admin.ModelAdmin):
+    list_display = ("id", "type", "amount", "date")
+    list_display_links = ("id", "type")
+    list_filter = ("type",)
+    search_fields = ("type__name",)
+    autocomplete_fields = ("type",)
+    readonly_fields = ("created_at", "updated_at")
