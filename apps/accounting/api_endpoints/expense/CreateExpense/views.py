@@ -6,11 +6,11 @@ from apps.users.permissions import IsAdminUser
 from .serializers import CreateExpenseSerializer
 
 
-class CreateExpenseViewAPIView(CreateAPIView):
+class CreateExpenseAPIView(CreateAPIView):
     queryset = Expense.objects.all()
     serializer_class = CreateExpenseSerializer
 
     permission_classes = (IsAdminUser,)
 
 
-__all__ = ["CreateExpenseViewAPIView"]
+__all__ = ["CreateExpenseAPIView"]

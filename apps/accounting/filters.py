@@ -1,7 +1,7 @@
 from django_filters import rest_framework as filters
 from drf_yasg import openapi
 
-from apps.accounting.models import MonthlyPayment
+from apps.accounting.models import Expense, MonthlyPayment
 
 
 class YearMonthFilter(filters.FilterSet):
@@ -19,6 +19,14 @@ class YearFilter(filters.FilterSet):
     class Meta:
         model = MonthlyPayment
         fields = ("year",)
+
+
+class ExpenseFilter(filters.FilterSet):
+    type = filters.NumberFilter(field_name="type")
+
+    class Meta:
+        model = Expense
+        fields = ("type",)
 
 
 YEAR_MONTH_FILTER_PARAMETERS = [

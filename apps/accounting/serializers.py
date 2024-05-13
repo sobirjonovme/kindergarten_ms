@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.accounting.models import MonthlyPayment
+from apps.accounting.models import Expense, ExpenseType, MonthlyPayment
 
 
 class MonthlyPaymentListSerializer(serializers.ModelSerializer):
@@ -15,3 +15,26 @@ class MonthlyPaymentListSerializer(serializers.ModelSerializer):
             "comment",
         )
         ref_name = "MonthlyPaymentListSerializer"
+
+
+class ExpenseTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExpenseType
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class ExpenseListSerializer(serializers.ModelSerializer):
+    type = ExpenseTypeSerializer(read_only=True)
+
+    class Meta:
+        model = Expense
+        fields = (
+            "id",
+            "type",
+            "amount",
+            "date",
+            "comment",
+        )
