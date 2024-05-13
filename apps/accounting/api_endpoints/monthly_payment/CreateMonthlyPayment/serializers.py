@@ -25,11 +25,14 @@ class MonthlyPaymentCreateSerializer(serializers.ModelSerializer):
             "is_completed",
             "comment",
         )
+        extra_kwargs = {
+            "user": {"required": True, "allow_null": False},
+        }
 
     def validate(self, attrs):
         year = attrs.get("year")
         month = attrs.get("month")
-        user = self.context["request"].user
+        user = attrs.get("user")
 
         if MonthlyPayment.objects.filter(user=user, paid_month__year=year, paid_month__month=month).exists():
             raise serializers.ValidationError(
