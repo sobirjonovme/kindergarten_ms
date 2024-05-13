@@ -1,3 +1,6 @@
+from uuid import uuid4
+
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
@@ -5,18 +8,35 @@ from django.utils.translation import gettext as _
 from apps.users.models import FaceIDLog, User
 
 
+class UserCreationForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ()
+
+
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    add_form = UserCreationForm
+
     list_display = (
         "id",
-        "username",
+        "type",
         "first_name",
         "last_name",
+        "middle_name",
+        "organization",
+        "educating_group",
     )
-    list_display_links = ("id", "username", "first_name", "last_name")
-    search_fields = ("id", "username", "first_name", "last_name")
-    list_filter = ("is_active",)
+    list_display_links = ("id", "first_name", "last_name", "middle_name")
+    search_fields = (
+        "id",
+        "first_name",
+        "last_name",
+        "middle_name",
+    )
+    list_filter = ("type", "organization", "educating_group")
     ordering = ("-id",)
+    autocomplete_fields = ("educating_group",)
     readonly_fields = ("created_at", "updated_at")
 
     fieldsets = (
@@ -48,16 +68,25 @@ class UserAdmin(BaseUserAdmin):
                     "first_name",
                     "last_name",
                     "middle_name",
+                    "gender",
                     "type",
                     "organization",
                     "educating_group",
-                    "username",
-                    "password1",
-                    "password2",
                 ),
             },
         ),
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related("organization", "educating_group")
+        return qs
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.username = User.generate_unique_username()
+            obj.set_password(uuid4().hex)
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(FaceIDLog)
