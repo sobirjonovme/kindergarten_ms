@@ -1,6 +1,7 @@
 from django.db import models
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView
+from rest_framework.validators import ValidationError
 
 from apps.accounting.filters import (YEAR_MONTH_FILTER_PARAMETERS,
                                      YearMonthFilter)
@@ -50,6 +51,15 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
 
     @swagger_auto_schema(manual_parameters=USERS_PAYMENT_FILTER_PARAMETERS)
     def get(self, request, *args, **kwargs):
+        # check if YEAR and MONTH are provided in the query parameters
+        year = request.query_params.get("year")
+        month = request.query_params.get("month")
+        if not year or not month:
+            raise ValidationError(
+                code="required",
+                detail={"year_month": ["Both year and month are required in the query parameters."]},
+            )
+
         res = super().get(request, *args, **kwargs)
 
         if isinstance(res.data, list):
