@@ -13,3 +13,4 @@ redis==5.0.4
 celery==5.4.0
 django-celery-beat==2.6.0
 requests==2.31.0
+django-solo==2.2.0

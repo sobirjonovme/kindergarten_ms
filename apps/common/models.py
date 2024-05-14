@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from solo.models import SingletonModel
 
 
 class BaseModel(models.Model):
@@ -32,3 +33,23 @@ class FrontendTranslation(BaseModel):
 
     def __str__(self):
         return str(self.key)
+
+
+class FaceIDSettings(SingletonModel):
+    # enter device
+    enter_device_ip = models.CharField(_("Enter device IP"), max_length=255, blank=True, null=True)
+    enter_device_last_sync_time = models.DateTimeField(_("Enter device last sync time"), blank=True, null=True)
+    enter_device_username = models.CharField(_("Enter device username"), max_length=255, blank=True, null=True)
+    enter_device_password = models.CharField(_("Enter device password"), max_length=255, blank=True, null=True)
+    # exit device
+    exit_device_ip = models.CharField(_("Exit device IP"), max_length=255, blank=True, null=True)
+    exit_device_last_sync_time = models.DateTimeField(_("Exit device last sync time"), blank=True, null=True)
+    exit_device_username = models.CharField(_("Exit device username"), max_length=255, blank=True, null=True)
+    exit_device_password = models.CharField(_("Exit device password"), max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Face ID settings")
+        verbose_name_plural = _("Face ID settings")
+
+    def __str__(self):
+        return str(_("Face ID settings"))

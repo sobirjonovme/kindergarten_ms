@@ -27,3 +27,8 @@ class UserTypes(models.TextChoices):
 class UserShortTypes(models.TextChoices):
     STUDENT = "student", _("Student")
     WORKER = "worker", _("Worker")
+
+
+class FaceIDLogTypes(models.TextChoices):
+    ENTER = "enter", _("Enter")
+    EXIT = "exit", _("Exit")

@@ -1,6 +1,8 @@
 from django.contrib import admin
+from solo.admin import SingletonModelAdmin
 
-from apps.common.models import FrontendTranslation, VersionHistory
+from apps.common.models import (FaceIDSettings, FrontendTranslation,
+                                VersionHistory)
 
 
 @admin.register(VersionHistory)
@@ -18,3 +20,8 @@ class FrontTranslationAdmin(admin.ModelAdmin):
     list_display_links = ("id", "key")
     search_fields = ("key", "text")
     readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(FaceIDSettings)
+class FaceIDSettingsAdmin(SingletonModelAdmin):
+    pass

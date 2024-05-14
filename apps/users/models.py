@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.common.models import BaseModel
 
-from .choices import GenderTypes, UserTypes
+from .choices import FaceIDLogTypes, GenderTypes, UserTypes
 
 
 # Create your models here.
@@ -53,7 +53,10 @@ class User(AbstractUser, BaseModel):
 
 class FaceIDLog(BaseModel):
     user = models.ForeignKey(verbose_name=_("User"), to="users.User", on_delete=models.CASCADE)
+    type = models.CharField(_("Type"), max_length=31, choices=FaceIDLogTypes.choices, null=True, blank=True)
     time = models.DateTimeField(_("Time"), default=timezone.now)
+    serial_no = models.CharField(_("Serial No"), max_length=255, blank=True, null=True)
+    log_data = models.JSONField(_("Log Data"), blank=True, null=True)
 
     class Meta:
         verbose_name = _("Face ID Log")
