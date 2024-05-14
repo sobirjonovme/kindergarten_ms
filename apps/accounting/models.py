@@ -38,9 +38,13 @@ class MonthlyPayment(BaseModel):
 
     def clean(self):
         # Check if there is existing payment for the user in the same month
-        if MonthlyPayment.objects.filter(
-            user=self.user, paid_month__year=self.paid_month.year, paid_month__month=self.paid_month.month
-        ).exists():
+        if (
+            MonthlyPayment.objects.filter(
+                user=self.user, paid_month__year=self.paid_month.year, paid_month__month=self.paid_month.month
+            )
+            .exclude(id=self.id)
+            .exists()
+        ):
             raise ValidationError(
                 message={
                     "user": _("User already has a payment for this month"),
