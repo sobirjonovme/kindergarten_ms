@@ -11,7 +11,7 @@ from apps.users.models import FaceIDLog, User
 
 class AttendanceService:
     def __init__(self, ip_address, username, password, last_sync_time, log_type):
-        self.base_url = f"http://{ip_address}"
+        self.base_url = ip_address
         self.username = username
         self.password = password
         self.log_type = log_type
