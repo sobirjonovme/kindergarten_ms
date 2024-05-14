@@ -35,13 +35,14 @@ class User(AbstractUser, BaseModel):
         verbose_name_plural = _("Users")
 
     def __str__(self):
+        name = self.username
+
         if self.first_name:
             name = self.first_name
             name += f" {self.last_name}" if self.last_name else ""
             name += f" {self.middle_name}" if self.middle_name else ""
-            return name
 
-        return self.username
+        return f"#{self.id} | {name}"
 
     @classmethod
     def generate_unique_username(cls):
@@ -63,4 +64,4 @@ class FaceIDLog(BaseModel):
         verbose_name_plural = _("Face ID Logs")
 
     def __str__(self):
-        return f"FaceID | {self.user}"
+        return f"FaceID #{self.id} | {self.user}"
