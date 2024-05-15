@@ -32,7 +32,7 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
     total_payment = 0
 
     def get_queryset(self):
-        users = User.objects.all()
+        users = User.objects.order_by("first_name", "last_name", "middle_name")
         users = UserFilter(data=self.request.query_params, queryset=users).qs
 
         users = users.prefetch_related(

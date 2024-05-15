@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .api_endpoints import (CreateExpenseAPIView, CreateMonthlyPaymentAPIView,
-                            ExpenseListAPIView, MonthlyIncomeListAPIView,
+                            ExpenseListAPIView, ExpenseTypeListAPIView,
+                            MonthlyIncomeListAPIView,
                             UpdateMonthlyPaymentAPIView,
                             UsersMonthlyPaymentListAPIView,
                             UserYearlyPaymentListAPIView)
@@ -21,6 +22,7 @@ urlpatterns = [
     # income
     path("income/monthly/", MonthlyIncomeListAPIView.as_view(), name="monthly-income-list"),
     # expenses
+    path("expense-type/list/", ExpenseTypeListAPIView.as_view(), name="expense-type-list"),
     path("expenses/create/", CreateExpenseAPIView.as_view(), name="expense-create"),
     path("expenses/list/", ExpenseListAPIView.as_view(), name="expense-list"),
 ]

@@ -73,9 +73,17 @@ class MonthlyIncomeListAPIView(APIView):
         )
 
         # combine the two queryset
-        data = list(school_income) + list(kindergarten_income)
+        overall_income = list(school_income) + list(kindergarten_income)
         # order the list by year-month
-        data = sorted(data, key=lambda x: x["year_month"])
+        overall_income = sorted(overall_income, key=lambda x: x["year_month"])
+
+        # calculate total income
+        total_income = sum([item["total"] for item in overall_income])
+
+        data = {
+            "total_income": total_income,
+            "monthly_incomes": overall_income,
+        }
 
         return Response(data, status=status.HTTP_200_OK)
 

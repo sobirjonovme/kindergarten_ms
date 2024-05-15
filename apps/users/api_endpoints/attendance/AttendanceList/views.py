@@ -23,7 +23,7 @@ class AttendanceListAPIView(ListAPIView):
     total_present_users = 0
 
     def get_queryset(self):
-        users_qs = User.objects.all()
+        users_qs = User.objects.order_by("first_name", "last_name", "middle_name")
 
         # get date query parameter
         date = self.request.query_params.get("date")
