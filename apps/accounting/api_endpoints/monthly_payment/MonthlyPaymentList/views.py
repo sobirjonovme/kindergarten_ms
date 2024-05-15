@@ -4,7 +4,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.validators import ValidationError
 
 from apps.accounting.filters import (YEAR_MONTH_FILTER_PARAMETERS,
-                                     YearMonthFilter)
+                                     MonthlyPaymentFilter)
 from apps.accounting.models import MonthlyPayment
 from apps.users.filters import USER_FILTER_PARAMETERS, UserFilter
 from apps.users.models import User
@@ -38,12 +38,12 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
         users = users.prefetch_related(
             models.Prefetch(
                 "monthly_payments",
-                queryset=YearMonthFilter(data=self.request.query_params, queryset=MonthlyPayment.objects.all()).qs,
+                queryset=MonthlyPaymentFilter(data=self.request.query_params, queryset=MonthlyPayment.objects.all()).qs,
             ),
         )
 
         # calculate total amount of payment
-        self.total_payment = YearMonthFilter(
+        self.total_payment = MonthlyPaymentFilter(
             data=self.request.query_params, queryset=MonthlyPayment.objects.filter(user__in=users)
         ).qs.aggregate(total_payment=models.Sum("amount"))["total_payment"]
 

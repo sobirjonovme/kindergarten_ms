@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 from rest_framework.views import APIView
 
-from apps.accounting.filters import YEAR_FILTER_PARAMETERS, YearFilter
+from apps.accounting.filters import (YEAR_FILTER_PARAMETERS,
+                                     MonthlyPaymentFilter)
 from apps.users.models import User
 from apps.users.permissions import IsAdminUser
 
@@ -27,7 +28,7 @@ class UserYearlyPaymentListAPIView(APIView):
                 detail={"year": "Year is required in the query parameters."},
             )
 
-        payments = YearFilter(request.query_params, queryset=user.monthly_payments).qs
+        payments = MonthlyPaymentFilter(request.query_params, queryset=user.monthly_payments).qs
 
         serializer = UserYearlyPaymentListSerializer(user, context={"request": request, "payments": payments})
         return Response(serializer.data, status=status.HTTP_200_OK)
