@@ -2,6 +2,7 @@ from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
 
 from apps.users.filters import ATTENDANCE_FILTER_PARAMETERS, UserFilter
 from apps.users.models import FaceIDLog, User
@@ -31,11 +32,22 @@ class AttendanceListAPIView(ListAPIView):
         face_id_logs = FaceIDLog.objects.filter(time__date=date)
         users_qs = users_qs.annotate(is_present=models.Exists(face_id_logs.filter(user=models.OuterRef("id"))))
 
-        # calculate the total amount of present users
-        self.total_users = users_qs.count()
-        self.total_present_users = users_qs.filter(is_present=True).count()
-
         return users_qs
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # calculate the total amount of present users
+        self.total_users = queryset.count()
+        self.total_present_users = queryset.filter(is_present=True).count()
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @swagger_auto_schema(manual_parameters=ATTENDANCE_FILTER_PARAMETERS)
     def get(self, request, *args, **kwargs):
