@@ -12,4 +12,5 @@ def send_telegram_message(bot_token, chat_id, text):
         response = requests.post(url)
         return response.json()
     except Exception as e:  # noqa
-        return None
+        print(e)
+        return e

@@ -5,6 +5,7 @@ from django.utils import timezone
 from requests.auth import HTTPDigestAuth
 
 from apps.common.models import FaceIDSettings
+from apps.common.services.logging import LoggingException, TelegramLogging
 from apps.users.choices import FaceIDLogTypes
 from apps.users.models import FaceIDLog, User
 
@@ -42,36 +43,30 @@ class AttendanceService:
         face_id_settings.save()
 
     def get_hikvision_device_response(self, start_time, end_time, search_position=0):
-        try:
-            res = requests.post(
-                f"{self.base_url}/ISAPI/AccessControl/AcsEvent?format=json",
-                json={
-                    "AcsEventCond": {
-                        "searchID": "randomtxt",
-                        "searchResultPosition": search_position,
-                        "maxResults": 24,
-                        "major": 0,
-                        "minor": 0,
-                        "startTime": start_time,
-                        "endTime": end_time,
-                        "timeReverseOrder": False,
-                    }
-                },
-                auth=HTTPDigestAuth(self.username, self.password),
+        res = requests.post(
+            f"{self.base_url}/ISAPI/AccessControl/AcsEvent?format=json",
+            json={
+                "AcsEventCond": {
+                    "searchID": "randomtxt",
+                    "searchResultPosition": search_position,
+                    "maxResults": 24,
+                    "major": 0,
+                    "minor": 0,
+                    "startTime": start_time,
+                    "endTime": end_time,
+                    "timeReverseOrder": False,
+                }
+            },
+            auth=HTTPDigestAuth(self.username, self.password),
+        )
+
+        if res.status_code != 200:
+            raise LoggingException(
+                message="Error in get_hikvision_device_response",
+                extra_kwargs={"status_code": res.status_code, "info": "Bad status code from Hikvision device"},
             )
 
-            if res.status_code != 200:
-                print("Error in get_hikvision_device_response")
-                print(res.status_code)
-                print(res.text)
-                return None
-
-            return res.json()
-
-        except Exception as e:  # noqa
-            print("Error in get_hikvision_device_response")
-            print(e)
-            return None
+        return res.json()
 
     def retrieve_hikvision_device_info(self, start_time, end_time, search_position=0):
         data = self.get_hikvision_device_response(
@@ -79,9 +74,11 @@ class AttendanceService:
             end_time=end_time,
             search_position=search_position,
         )
-        if data is None:
-            # TODO: Log error and notify admin in some way
-            return None
+        if not data:
+            raise LoggingException(
+                message="Hikvision data is Empty",
+                extra_kwargs={"info": "Hikvision data is Empty"},
+            )
 
         acs_event = data.get("AcsEvent", {})
         total_matches = acs_event.get("totalMatches", 0)
@@ -91,7 +88,7 @@ class AttendanceService:
 
         return acs_event
 
-    def store_attendance_log(self):
+    def _store_attendance_log(self):
         search_position = 0
 
         while True:
@@ -120,7 +117,16 @@ class AttendanceService:
 
                 user = User.objects.filter(id=user_id).first()
                 if not user:
-                    # TODO: Log error and notify admin in some way about missing user
+                    # Log error and notify admin about missing user without stopping the process
+                    exception = LoggingException(
+                        message=str(info),
+                        extra_kwargs={
+                            "info": "User not found in database",
+                            "user_id": user_id,
+                        },
+                    )
+                    logging = TelegramLogging(exception)
+                    logging.send_log_to_admin()
                     continue
 
                 if serial_no and FaceIDLog.objects.filter(serial_no=serial_no).exists():
@@ -145,3 +151,11 @@ class AttendanceService:
                 break
 
             search_position += 24
+
+    def store_attendance_log(self):
+        try:
+            self._store_attendance_log()
+        except Exception as e:
+            # Log the exception and send the details to the admin
+            logging = TelegramLogging(e)
+            logging.send_log_to_admin()
