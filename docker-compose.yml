@@ -36,6 +36,7 @@ services:
       - db
 
   celery-worker:
+    restart: always
     build:
       context: ./
       dockerfile: Dockerfile
