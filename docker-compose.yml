@@ -34,6 +34,8 @@ services:
       - ${WEB_PORT}:${WEB_PORT}
     depends_on:
       - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   celery-worker:
     restart: always
