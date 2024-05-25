@@ -23,6 +23,9 @@ class TelegramLogging:
         try:
             tb_list = traceback.format_exception(None, self.exception, self.exception.__traceback__)
             tb_string = "".join(tb_list)
+            tb_string = tb_string.replace("<", "{")
+            tb_string = tb_string.replace(">", "}")
+
             msg = "<b>ERROR | Kindergarten MS</b>\n\n"
             if extra:
                 for key, value in extra.items():
