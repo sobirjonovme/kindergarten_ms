@@ -14,7 +14,6 @@ DEBUG = True
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_COOKIE_SECURE = True
-CORS_ALLOW_ALL_ORIGINS = True
 # CSRF_TRUSTED_ORIGINS = [
 #     "http://localhost",
 #     "http://127.0.0.1",
@@ -25,6 +24,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CORS
 ###################################################################
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ["*"]
