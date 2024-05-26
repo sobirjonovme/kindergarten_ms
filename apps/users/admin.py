@@ -43,7 +43,17 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("username", "password")}),
         (
             _("Personal info"),
-            {"fields": ("first_name", "last_name", "middle_name", "type", "organization", "educating_group")},
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "middle_name",
+                    "face_id",
+                    "type",
+                    "organization",
+                    "educating_group",
+                )
+            },
         ),
         (
             _("Permissions"),
@@ -68,6 +78,7 @@ class UserAdmin(BaseUserAdmin):
                     "first_name",
                     "last_name",
                     "middle_name",
+                    "face_id",
                     "gender",
                     "type",
                     "organization",

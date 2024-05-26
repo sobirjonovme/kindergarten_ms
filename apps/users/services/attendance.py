@@ -110,20 +110,20 @@ class AttendanceService:
             for info in info_list:  # noqa
                 # Process each info and store in database
                 last_event_time = info.get("time", None)
-                user_id = info.get("employeeNoString")
+                face_id = info.get("employeeNoString")
                 serial_no = info.get("serialNo")
 
-                if not user_id:
+                if not face_id:
                     continue
 
-                user = User.objects.filter(id=user_id).first()
+                user = User.objects.filter(face_id=face_id).first()
                 if not user:
                     # Log error and notify admin about missing user without stopping the process
                     exception = LoggingException(
                         message=str(info),
                         extra_kwargs={
                             "info": "User not found in database",
-                            "user_id": user_id,
+                            "face_id": face_id,
                         },
                     )
                     logging = TelegramLogging(exception)

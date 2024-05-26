@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -15,6 +16,8 @@ class User(AbstractUser, BaseModel):
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
     middle_name = models.CharField(_("Middle Name"), max_length=255, blank=True, null=True)
+    # face_id must be unique
+    face_id = models.CharField(_("Face ID"), max_length=255, null=True)
     gender = models.CharField(
         verbose_name=_("Gender"), max_length=31, choices=GenderTypes.choices, null=True, blank=True
     )
@@ -43,6 +46,11 @@ class User(AbstractUser, BaseModel):
             name += f" {self.middle_name}" if self.middle_name else ""
 
         return f"#{self.id} | {name}"
+
+    def clean(self):
+        # check face_id uniqueness
+        if self.face_id and User.objects.filter(face_id=self.face_id).exclude(id=self.id).exists():
+            raise ValidationError({"face_id": _("Kiritilgan Face ID allaqachon ishlatilgan")})
 
     @classmethod
     def generate_unique_username(cls):
