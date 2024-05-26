@@ -24,15 +24,17 @@ class UserAdmin(BaseUserAdmin):
         "first_name",
         "last_name",
         "middle_name",
+        "face_id",
         "organization",
         "educating_group",
     )
-    list_display_links = ("id", "first_name", "last_name", "middle_name")
+    list_display_links = ("id", "first_name", "last_name", "middle_name", "face_id")
     search_fields = (
         "id",
         "first_name",
         "last_name",
         "middle_name",
+        "face_id",
     )
     list_filter = ("type", "organization", "educating_group")
     ordering = ("-id",)
