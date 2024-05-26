@@ -41,11 +41,13 @@ class FaceIDSettings(SingletonModel):
     enter_device_last_sync_time = models.DateTimeField(_("Enter device last sync time"), blank=True, null=True)
     enter_device_username = models.CharField(_("Enter device username"), max_length=255, blank=True, null=True)
     enter_device_password = models.CharField(_("Enter device password"), max_length=255, blank=True, null=True)
+    enter_last_run = models.DateTimeField(_("Enter last run"), blank=True, null=True)
     # exit device
     exit_device_ip = models.CharField(_("Exit device IP"), max_length=255, blank=True, null=True)
     exit_device_last_sync_time = models.DateTimeField(_("Exit device last sync time"), blank=True, null=True)
     exit_device_username = models.CharField(_("Exit device username"), max_length=255, blank=True, null=True)
     exit_device_password = models.CharField(_("Exit device password"), max_length=255, blank=True, null=True)
+    exit_last_run = models.DateTimeField(_("Exit last run"), blank=True, null=True)
 
     class Meta:
         verbose_name = _("Face ID settings")

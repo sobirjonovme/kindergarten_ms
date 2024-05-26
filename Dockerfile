@@ -37,10 +37,12 @@ RUN pip install -r production.txt
 
 # copy entrypoint.sh
 COPY ./entrypoint.sh $APP_HOME
+COPY ./celery-entrypoint.sh $APP_HOME
 
 # copy project
 COPY . $APP_HOME
 
 # run entrypoint.prod.sh
 RUN ["chmod", "+x", "/home/app/web/entrypoint.sh"]
+RUN ["chmod", "+x", "/home/app/web/celery-entrypoint.sh"]
 # ENTRYPOINT ["/home/app/web/entrypoint.sh"]

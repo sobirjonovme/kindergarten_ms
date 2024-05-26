@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:15
     volumes:
-      - postgres_data:/var/lib/postgres/data/
+      - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env
     environment:
@@ -42,6 +42,7 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    entrypoint: /home/app/web/celery-entrypoint.sh
     command: celery -A core worker --beat --scheduler django --loglevel=info
     volumes:
       - ./:/app
@@ -50,6 +51,7 @@ services:
     depends_on:
       - web
       - redis
+      - db
 
   redis:
     image: redis:5.0
