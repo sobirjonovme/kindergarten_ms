@@ -16,7 +16,7 @@ JAZZMIN_SETTINGS: dict = {
     # Welcome text on the login screen
     "welcome_sign": "Welcome to Admin",
     # Copyright on the footer
-    "copyright": "sobirjonov_me",
+    "copyright": "FASCo / sobirjonov_me",
     # The model admin to search from the search bar, search bar omitted if excluded
     # "search_model": "",
     # Field name on user model that contains avatar ImageField/URLField/Charfield or a callable that receives the user
