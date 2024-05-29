@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from django.utils.translation import gettext_lazy as _
 
 from core.jazzmin_conf import *  # noqa
 
@@ -59,6 +60,7 @@ THIRD_PARTY_APPS = [
     "drf_yasg",
     "corsheaders",
     "django_celery_beat",
+    "rosetta",
 ]
 
 REST_FRAMEWORK = {
@@ -85,7 +87,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "django.middleware.locale.LocaleMiddleware",  # for translations, uncomment this line if you need translations
+    "django.middleware.locale.LocaleMiddleware",  # for translations, uncomment this line if you need translations
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -153,10 +155,16 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
 LANGUAGE_CODE = "uz"
+LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
+LANGUAGES = [
+    ("uz", _("Uzbek")),
+    ("en", _("English")),
+]
 
 TIME_ZONE = "Asia/Tashkent"
 
 USE_I18N = True
+USE_L10N = True
 
 USE_TZ = True
 

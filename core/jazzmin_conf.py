@@ -95,7 +95,7 @@ JAZZMIN_SETTINGS: dict = {
         "auth.group": "vertical_tabs",
     },
     # Add a language dropdown into the admin
-    "language_chooser": False,
+    "language_chooser": True,
 }
 
 JAZZMIN_UI_TWEAKS = {
