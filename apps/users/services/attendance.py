@@ -157,6 +157,8 @@ class AttendanceService:
         try:
             self._store_attendance_log()
         except Exception as e:
+            print("==========================================")
+            print(e)
             # Log the exception and send the details to the admin
             logging = TelegramLogging(e)
             logging.send_log_to_admin()

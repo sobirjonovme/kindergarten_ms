@@ -17,7 +17,6 @@ def get_and_store_attendance_log():
         and face_id_settings.enter_device_password
         and face_id_settings.enter_device_last_sync_time
     ):
-        print("get_and_store_attendance_log")
         attendance_service = AttendanceService(
             ip_address=face_id_settings.enter_device_ip,
             username=face_id_settings.enter_device_username,
