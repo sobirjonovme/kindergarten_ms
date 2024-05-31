@@ -25,7 +25,7 @@ def get_and_store_attendance_log():
         )
         attendance_service.store_attendance_log()
         face_id_settings.enter_last_run = timezone.now()
-        face_id_settings.save(update_fields=["exit_last_run"])
+        face_id_settings.save(update_fields=["enter_last_run"])
 
     if bool(
         face_id_settings.exit_device_ip
