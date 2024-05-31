@@ -38,6 +38,7 @@ class AttendanceService:
         if self.log_type == FaceIDLogTypes.ENTER and time_obj > face_id_settings.enter_device_last_sync_time:
             face_id_settings.enter_device_last_sync_time = time_obj
             face_id_settings.save(update_fields=["enter_device_last_sync_time"])
+
         elif self.log_type == FaceIDLogTypes.EXIT and time_obj > face_id_settings.exit_device_last_sync_time:
             face_id_settings.exit_device_last_sync_time = time_obj
             face_id_settings.save(update_fields=["exit_device_last_sync_time"])
