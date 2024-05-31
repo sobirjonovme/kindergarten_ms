@@ -15,6 +15,7 @@ from pathlib import Path
 
 import environ
 from django.utils.translation import gettext_lazy as _
+from import_export.formats.base_formats import XLSX
 
 from core.jazzmin_conf import *  # noqa
 
@@ -61,6 +62,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "django_celery_beat",
     "rosetta",
+    "import_export",
 ]
 
 REST_FRAMEWORK = {
@@ -229,3 +231,7 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_LIFETIME": timedelta(days=1),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=10),
 }
+
+# IMPORT_EXPORT CONFIGURATION
+IMPORT_EXPORT_USE_TRANSACTIONS = True
+IMPORT_EXPORT_FORMATS = [XLSX]

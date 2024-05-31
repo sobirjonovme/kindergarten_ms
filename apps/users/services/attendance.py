@@ -58,7 +58,7 @@ class AttendanceService:
                 }
             },
             auth=HTTPDigestAuth(self.username, self.password),
-            timeout=40,
+            timeout=15,
         )
 
         if res.status_code != 200:
