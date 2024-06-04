@@ -120,13 +120,13 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
 
     list_display = (
         "id",
-        "type",
         "first_name",
         "last_name",
         "middle_name",
         "face_id",
         "organization",
         "educating_group",
+        "type",
     )
     list_display_links = ("id", "first_name", "last_name", "middle_name", "face_id")
     search_fields = (
@@ -151,9 +151,11 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
                     "last_name",
                     "middle_name",
                     "face_id",
+                    "gender",
                     "type",
                     "organization",
                     "educating_group",
+                    "parents_tg_ids",
                 )
             },
         ),
@@ -210,10 +212,11 @@ class FaceIDLogAdmin(admin.ModelAdmin):
         "user",
         "type",
         "time",
+        "is_notified",
     )
     list_display_links = ("id", "serial_no", "user", "time")
     search_fields = ("id", "user__username", "user__first_name", "user__last_name")
-    list_filter = ("created_at",)
+    list_filter = ("created_at", "type", "is_notified")
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
     date_hierarchy = "time"

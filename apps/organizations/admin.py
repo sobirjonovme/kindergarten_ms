@@ -17,6 +17,7 @@ class EducatingGroupAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "organization")
     list_display_links = ("id", "name", "organization")
     list_filter = ("organization",)
+    ordering = ("-id",)
     search_fields = (
         "id",
         "name",

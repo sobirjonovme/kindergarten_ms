@@ -59,10 +59,12 @@ CUSTOM_APPS = [
 THIRD_PARTY_APPS = [
     "rest_framework",
     "drf_yasg",
+    "django_filters",
     "corsheaders",
     "django_celery_beat",
     "rosetta",
     "import_export",
+    "django_jsonform",
 ]
 
 REST_FRAMEWORK = {

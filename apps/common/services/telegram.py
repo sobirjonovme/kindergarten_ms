@@ -1,15 +1,15 @@
-import requests
+import typing
+
+from telegram import Bot
 
 
-def send_telegram_message(bot_token, chat_id, text):
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-
+def send_telegram_message(bot_token, chat_id, text) -> typing.Tuple[bool, typing.Union[dict, str, Exception]]:
+    bot = Bot(token=bot_token)
     try:
-        response = requests.post(
-            url=url,
-            params={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
-        )
-        return response.json()
+        msg = bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
+
+        return True, msg.result
+
     except Exception as e:  # noqa
         print(e)
-        return e
+        return False, e

@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_jsonform.models.fields import ArrayField
 
 from apps.common.models import BaseModel
 
@@ -31,6 +32,12 @@ class User(AbstractUser, BaseModel):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+    )
+    parents_tg_ids = ArrayField(
+        verbose_name=_("Parents Telegram IDs"),
+        base_field=models.CharField(max_length=31, blank=True, null=True),
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -66,6 +73,8 @@ class FaceIDLog(BaseModel):
     time = models.DateTimeField(_("Time"), default=timezone.now)
     serial_no = models.CharField(_("Serial No"), max_length=255, blank=True, null=True)
     log_data = models.JSONField(_("Log Data"), blank=True, null=True)
+    is_notified = models.BooleanField(_("Is Notified"), default=False)
+    notification_log = models.TextField(verbose_name=_("Notification Log"), blank=True, null=True)
 
     class Meta:
         verbose_name = _("Face ID Log")

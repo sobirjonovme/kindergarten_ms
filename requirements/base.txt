@@ -16,3 +16,5 @@ requests==2.31.0
 django-solo==2.2.0
 django-rosetta==0.10.0
 django-import-export[xlsx]==4.0.6
+python-telegram-bot==13.15
+django-jsonform==2.22.0
