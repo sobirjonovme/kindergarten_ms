@@ -8,7 +8,7 @@ def send_telegram_message(bot_token, chat_id, text) -> typing.Tuple[bool, typing
     try:
         msg = bot.send_message(chat_id=chat_id, text=text, parse_mode="HTML")
 
-        return True, msg.result
+        return True, msg.to_dict()
 
     except Exception as e:  # noqa
         print(e)

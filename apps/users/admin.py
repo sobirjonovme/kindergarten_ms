@@ -12,6 +12,7 @@ from import_export.widgets import ForeignKeyWidget
 
 from apps.organizations.models import EducatingGroup, Organization
 from apps.users.models import FaceIDLog, User
+from apps.users.tasks import send_user_info_to_hikvision
 
 FACE_ID_COLUMN_NAME = "Face ID"
 
@@ -150,12 +151,28 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
                     "first_name",
                     "last_name",
                     "middle_name",
+                    "face_image",
                     "face_id",
                     "gender",
                     "type",
                     "organization",
                     "educating_group",
                     "parents_tg_ids",
+                )
+            },
+        ),
+        (
+            _("Hikvision Sync"),
+            {
+                "fields": (
+                    "is_enter_terminal_synced",
+                    "enter_terminal_sync_data",
+                    "is_enter_image_synced",
+                    "enter_image_sync_data",
+                    "is_exit_terminal_synced",
+                    "exit_terminal_sync_data",
+                    "is_exit_image_synced",
+                    "exit_image_sync_data",
                 )
             },
         ),
@@ -202,6 +219,8 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
             obj.username = User.generate_unique_username()
             obj.set_password(uuid4().hex)
         super().save_model(request, obj, form, change)
+
+        send_user_info_to_hikvision.delay(obj.id)
 
 
 @admin.register(FaceIDLog)

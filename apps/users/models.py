@@ -17,8 +17,27 @@ class User(AbstractUser, BaseModel):
     first_name = models.CharField(_("first name"), max_length=150)
     last_name = models.CharField(_("last name"), max_length=150)
     middle_name = models.CharField(_("Middle Name"), max_length=255, blank=True, null=True)
-    # face_id must be unique
+    face_image = models.ImageField(
+        verbose_name=_("Face Image"),
+        upload_to="face_images",
+        help_text=_("Image size should be less than 200KB"),
+        blank=True,
+        null=True,
+    )
+
+    # Face ID terminal fields
     face_id = models.CharField(_("Face ID"), max_length=255, null=True)
+    # face_id must be unique
+    is_enter_terminal_synced = models.BooleanField(_("Is Synced with Enter Terminal"), default=False)
+    enter_terminal_sync_data = models.TextField(verbose_name=_("Enter Terminal Sync Data"), blank=True, null=True)
+    is_enter_image_synced = models.BooleanField(_("Is Image Synced with Enter Terminal"), default=False)
+    enter_image_sync_data = models.TextField(verbose_name=_("Enter Image Sync Data"), blank=True, null=True)
+    is_exit_terminal_synced = models.BooleanField(_("Is Synced with Exit Terminal"), default=False)
+    exit_terminal_sync_data = models.TextField(verbose_name=_("Exit Terminal Sync Data"), blank=True, null=True)
+    is_exit_image_synced = models.BooleanField(_("Is Image Synced with Exit Terminal"), default=False)
+    exit_image_sync_data = models.TextField(verbose_name=_("Exit Image Sync Data"), blank=True, null=True)
+    # End of Face ID terminal fields
+
     gender = models.CharField(
         verbose_name=_("Gender"), max_length=31, choices=GenderTypes.choices, null=True, blank=True
     )
@@ -58,6 +77,16 @@ class User(AbstractUser, BaseModel):
         # check face_id uniqueness
         if self.face_id and User.objects.filter(face_id=self.face_id).exclude(id=self.id).exists():
             raise ValidationError({"face_id": _("Kiritilgan Face ID allaqachon ishlatilgan")})
+
+        # check face image size less than 200KB
+        if self.face_image and self.face_image.size > 200 * 1024:
+            raise ValidationError({"face_image": _("Rasm hajmi 200KB dan kam bo'lishi kerak")})
+
+    def generate_full_name(self):
+        full_name = self.first_name
+        full_name += f" {self.last_name}" if self.last_name else ""
+        full_name += f" {self.middle_name}" if self.middle_name else ""
+        return full_name
 
     @classmethod
     def generate_unique_username(cls):
