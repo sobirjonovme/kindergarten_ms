@@ -3,7 +3,8 @@ import time
 from django.utils import dateformat, timezone
 from django.utils.translation import gettext as _
 
-from apps.common.services.telegram import send_telegram_message
+from apps.common.services.telegram import (send_telegram_message,
+                                           send_telegram_message_image)
 from apps.users.choices import FaceIDLogTypes
 
 
@@ -21,22 +22,29 @@ class ParentNotification:
     def generate_notification_message(self):
         # Generate notification message
         if self.face_id_log.type == FaceIDLogTypes.ENTER:
-            msg = str(_("Sizning farzandingiz muassasamizga kirdi! \n\n" "Ismi: {student_name}\n" "Vaqt: {time}"))
+            msg = str(_("<b>🏫🤝 Sizning farzandingiz muassasamizga yetib keldi!</b> \n\n"))
         elif self.face_id_log.type == FaceIDLogTypes.EXIT:
-            msg = str(_("Sizning farzandingiz muassasamizdan chiqdi! \n\n" "Ismi: {student_name}\n" "Vaqt: {time}"))
+            msg = str(_("<b>🏡👋🏻 Sizning farzandingiz muassasamizni tark etdi!</b> \n\n"))
+        msg += str(_("<i>🧑🏻‍🏫 Ismi</i>:  <b>{student_name}</b>\n" "<i>🕖 Vaqt</i>:  <b>{time}</b>"))
 
         logged_time = self.face_id_log.time
         logged_time_aware = logged_time.astimezone(timezone.get_current_timezone())
-        formatted_time = dateformat.format(logged_time_aware, "j-F H:i")
+        # format time like: 31/01 12:30
+        formatted_time = dateformat.format(logged_time_aware, "d/m • H:i")
 
-        msg = msg.format(student_name=self.face_id_log.user.get_full_name(), time=formatted_time)
+        msg = msg.format(student_name=self.face_id_log.user.generate_full_name(), time=formatted_time)
         return msg
 
     def send_notification(self, tg_chat_id):
         face_log = self.face_id_log
+        user = face_log.user
 
         msg = self.generate_notification_message()
-        status, res = send_telegram_message(self.bot_token, tg_chat_id, msg)
+        if user.face_image:
+            # send image with message
+            status, res = send_telegram_message_image(self.bot_token, tg_chat_id, user.face_image.path, msg)
+        else:
+            status, res = send_telegram_message(self.bot_token, tg_chat_id, msg)
 
         if face_log.is_notified is True:
             # it is enough to send notification to one parent
