@@ -1,4 +1,5 @@
 from celery import shared_task
+from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import activate
 
@@ -51,14 +52,17 @@ def get_and_store_attendance_log():
 
 @shared_task
 def send_face_id_notification_to_parents():
+    bot_token = settings.BOT_TOKEN
+    if not bot_token:
+        return
     activate("uz")
+
     # today_beginning = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
     lower_bound = timezone.now() - timezone.timedelta(minutes=60)
-
     face_id_logs = FaceIDLog.objects.filter(time__gte=lower_bound, is_notified=False).order_by("time")
 
     for face_id_log in face_id_logs:
-        parent_notification = ParentNotification(face_id_log)
+        parent_notification = ParentNotification(bot_token=bot_token, face_id_log=face_id_log)
         parent_notification.send_notification_to_parents()
 
 

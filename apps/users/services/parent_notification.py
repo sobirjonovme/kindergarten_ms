@@ -15,9 +15,9 @@ class ParentNotification:
     ""
     """
 
-    def __init__(self, face_id_log):
+    def __init__(self, bot_token, face_id_log):
+        self.bot_token = bot_token
         self.face_id_log = face_id_log
-        self.bot_token = "5060653181:AAGYXXcL4VvPLXuc8cz2Ec9AHgG6fMUjsRg"
 
     def generate_notification_message(self):
         # Generate notification message

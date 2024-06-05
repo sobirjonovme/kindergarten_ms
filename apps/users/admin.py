@@ -13,6 +13,7 @@ from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget
 
 from apps.organizations.models import EducatingGroup, Organization
+from apps.users.choices import FaceIDLogTypes
 from apps.users.models import FaceIDLog, User
 from apps.users.tasks import send_user_info_to_hikvision
 
@@ -338,7 +339,7 @@ class FaceIDLogAdmin(admin.ModelAdmin):
         "id",
         "serial_no",
         "user",
-        "type",
+        "type_",
         "time",
         "is_notified",
     )
@@ -348,3 +349,17 @@ class FaceIDLogAdmin(admin.ModelAdmin):
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
     date_hierarchy = "time"
+
+    def type_(self, obj):
+        if not obj.type:
+            return "-"
+
+        type_colors = {
+            # FaceIDLogTypes.ENTER: "#1fafed",
+            # FaceIDLogTypes.IN_PROGRESS: "#3e484f",
+            FaceIDLogTypes.ENTER: "green",
+            FaceIDLogTypes.EXIT: "red",
+        }
+        return mark_safe(f'<span style="color: {type_colors[obj.type]}"><b>{obj.get_type_display()}</b></span>')
+
+    type_.short_description = _("Type")  # type: ignore
