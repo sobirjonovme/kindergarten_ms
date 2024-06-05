@@ -1,9 +1,11 @@
-from pathlib import Path
+import uuid
 
 import requests
+from django.conf import settings
 from requests.auth import HTTPDigestAuth
 
-BASE_DIR = Path(__file__).resolve().parent
+from apps.common.services.logging import LoggingException, TelegramLogging
+from apps.users.models import User
 
 
 class UserInfoReceiver:
@@ -33,7 +35,7 @@ class UserInfoReceiver:
 
         return res.json()
 
-    def retreive_users_info_list(self, search_position=0):
+    def retrieve_users_info_list(self, search_position=0):
         data = self.get_users_info_response(search_position)
         if not data:
             raise Exception("Users info data is empty")
@@ -50,23 +52,24 @@ class UserInfoReceiver:
         # Sending a GET request to download the image
         response = requests.get(image_url, auth=self.auth)
 
+        user_name = user_name.replace(" ", "_")
+        image_rel_path = f"face_images/{user_id}_{user_name}_{uuid.uuid4().hex}.jpg"
+
         # Check if the request was successful
         if response.status_code == 200:
-            user_name = user_name.replace(" ", "_")
-            file_path = f"{BASE_DIR}/media/{user_id}_{user_name}.jpg"
+            file_path = f"{settings.BASE_DIR}/media/{image_rel_path}"
             # Saving the image to a file
             with open(file_path, "wb") as f:
                 f.write(response.content)
-            print("Image downloaded successfully.")
+            return image_rel_path
         else:
             print("Failed to download the image. Status code:", response.status_code)
 
     def _store_user_info_bulk(self):
         search_position = 0
-        log_record_list = []
 
         while True:
-            user_info_search = self.retreive_users_info_list(
+            user_info_search = self.retrieve_users_info_list(
                 search_position=search_position,
             )
             if not user_info_search:
@@ -76,39 +79,44 @@ class UserInfoReceiver:
             res_status = user_info_search.get("responseStatusStrg", None)
 
             for info in info_list:  # noqa
+                print("+++++++++++++++++++++++++++")
                 # Process each info and store in database
                 user_name = info.get("name")
                 face_id = info.get("employeeNo")
                 face_image_url = info.get("faceURL")
+                print(face_id, " | ", user_name)
 
                 if not face_image_url:
+                    print("No face image URL")
                     continue
 
-                self.download_user_face_image(image_url=face_image_url, user_name=user_name, user_id=face_id)
+                image = self.download_user_face_image(image_url=face_image_url, user_name=user_name, user_id=face_id)
 
-                # user = User.objects.filter(face_id=face_id).first()
-                # if not user:
-                #     # Log error and notify admin about missing user without stopping the process
-                #     exception = LoggingException(
-                #         message=str(info),
-                #         extra_kwargs={
-                #             "info": "User not found in database",
-                #             "face_id": face_id,
-                #         },
-                #     )
-                #     logging = TelegramLogging(exception)
-                #     logging.send_log_to_admin()
-                #     continue
+                if not image:
+                    continue
 
-                # add log record to list
-                log_record_list.append(f"{face_id} | {user_name}")
+                user = User.objects.filter(face_id=face_id).first()
+                if not user:
+                    # Log error and notify admin about missing user without stopping the process
+                    exception = LoggingException(
+                        message=str(info),
+                        extra_kwargs={
+                            "info": "User not found in database in UserInfoReceiver",
+                            "face_id": face_id,
+                        },
+                    )
+                    logging = TelegramLogging(exception)
+                    logging.send_log_to_admin()
+                    continue
+
+                user.face_image = image
+                user.save(update_fields=["face_image"])
+                print(f"{user.id} | Successfully saved face image")
 
             if res_status == "OK":
                 break
 
             search_position += 20
-
-        print(log_record_list)
 
     def store_user_info_bulk(self):
         try:
@@ -123,5 +131,5 @@ if __name__ == "__main__":
     username = "admin"
     password = "Hunter2003"
 
-    user_info_retreiver = UserInfoReceiver(base_url, username, password)
-    user_info_retreiver.store_user_info_bulk()
+    user_info_receiver = UserInfoReceiver(base_url, username, password)
+    user_info_receiver.store_user_info_bulk()
