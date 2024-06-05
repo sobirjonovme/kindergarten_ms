@@ -52,8 +52,12 @@ class UserInfoReceiver:
         # Sending a GET request to download the image
         response = requests.get(image_url, auth=self.auth)
 
+        # retrieve image extension
+        image_extension = image_url.split(".")[-1]
+        image_extension = image_extension.split("@")[0]
+
         user_name = user_name.replace(" ", "_")
-        image_rel_path = f"face_images/{user_id}_{user_name}_{uuid.uuid4().hex}.jpg"
+        image_rel_path = f"face_images/{user_id}_{user_name}_{uuid.uuid4().hex}.{image_extension}"
 
         # Check if the request was successful
         if response.status_code == 200:

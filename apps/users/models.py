@@ -85,7 +85,6 @@ class User(AbstractUser, BaseModel):
     def generate_full_name(self):
         full_name = self.first_name
         full_name += f" {self.last_name}" if self.last_name else ""
-        full_name += f" {self.middle_name}" if self.middle_name else ""
         return full_name
 
     @classmethod

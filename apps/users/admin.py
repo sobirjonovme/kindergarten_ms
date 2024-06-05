@@ -2,9 +2,11 @@ from uuid import uuid4
 
 import tablib
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from import_export import admin as ie_admin
 from import_export import fields, resources
@@ -15,6 +17,79 @@ from apps.users.models import FaceIDLog, User
 from apps.users.tasks import send_user_info_to_hikvision
 
 FACE_ID_COLUMN_NAME = "Face ID"
+
+
+def sync_with_terminals(modeladmin, request, queryset):
+    for user in queryset:
+        send_user_info_to_hikvision.delay(user.id)
+
+    modeladmin.message_user(request, str(_("Sending user info to Hikvision is in progress")), messages.WARNING)
+
+
+class UserFaceImageFilter(admin.SimpleListFilter):
+    title = _("has face image")
+    parameter_name = "has_face_image"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("Yes", _("Yes")),
+            ("No", _("No")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "Yes":
+            qs_filter = Q(Q(face_image__isnull=False) & ~Q(face_image__exact=""))
+            return queryset.filter(qs_filter)
+
+        if self.value() == "No":
+            qs_filter = Q(Q(face_image__isnull=True) | Q(face_image__exact=""))
+            return queryset.filter(qs_filter)
+
+        return queryset  # Default value
+
+
+class EnterTerminalFilter(admin.SimpleListFilter):
+    title = _("Enter Terminal Sync")
+    parameter_name = "enter_terminal_sync"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("Yes", _("Yes")),
+            ("No", _("No")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "Yes":
+            qs_filter = Q(Q(is_enter_terminal_synced=True) & Q(is_enter_image_synced=True))
+            return queryset.filter(qs_filter)
+
+        if self.value() == "No":
+            qs_filter = Q(Q(is_enter_terminal_synced=False) | Q(is_enter_image_synced=False))
+            return queryset.filter(qs_filter)
+
+        return queryset  # Default value
+
+
+class ExitTerminalFilter(admin.SimpleListFilter):
+    title = _("Exit Terminal Sync")
+    parameter_name = "exit_terminal_sync"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("Yes", _("Yes")),
+            ("No", _("No")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "Yes":
+            qs_filter = Q(Q(is_exit_terminal_synced=True) & Q(is_exit_image_synced=True))
+            return queryset.filter(qs_filter)
+
+        if self.value() == "No":
+            qs_filter = Q(Q(is_exit_terminal_synced=False) | Q(is_exit_image_synced=False))
+            return queryset.filter(qs_filter)
+
+        return queryset  # Default value
 
 
 class UserResource(resources.ModelResource):
@@ -118,9 +193,11 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
     show_change_form_export = False
 
     add_form = UserCreationForm
+    actions = (sync_with_terminals,)
 
     list_display = (
         "id",
+        "user_pic",
         "first_name",
         "last_name",
         "middle_name",
@@ -128,6 +205,8 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
         "organization",
         "educating_group",
         "type",
+        "terminal_1",
+        "terminal_2",
     )
     list_display_links = ("id", "first_name", "last_name", "middle_name", "face_id")
     search_fields = (
@@ -137,7 +216,14 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
         "middle_name",
         "face_id",
     )
-    list_filter = ("type", "organization", "educating_group")
+    list_filter = (
+        "type",
+        "organization",
+        "educating_group",
+        UserFaceImageFilter,
+        EnterTerminalFilter,
+        ExitTerminalFilter,
+    )
     ordering = ("-id",)
     autocomplete_fields = ("educating_group",)
     readonly_fields = ("created_at", "updated_at")
@@ -208,6 +294,29 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
             },
         ),
     )
+
+    def user_pic(self, obj):
+        return mark_safe(
+            '<a href="{url}"><img src="{url}" width="50" height="50" />'.format(
+                url=obj.face_image.url if obj.face_image else "/static/images/default.png"
+            )
+        )
+
+    user_pic.short_description = _("User pic")  # type: ignore
+
+    def terminal_1(self, obj):
+        is_complete = bool(obj.is_enter_terminal_synced and obj.is_enter_image_synced)
+        return is_complete
+
+    terminal_1.short_description = _("Terminal 1")  # type: ignore
+    terminal_1.boolean = True  # type: ignore
+
+    def terminal_2(self, obj):
+        is_complete = bool(obj.is_exit_terminal_synced and obj.is_exit_image_synced)
+        return is_complete
+
+    terminal_2.short_description = _("Terminal 2")  # type: ignore
+    terminal_2.boolean = True  # type: ignore
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
