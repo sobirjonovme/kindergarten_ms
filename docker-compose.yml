@@ -45,7 +45,9 @@ services:
     entrypoint: /home/app/web/celery-entrypoint.sh
     command: celery -A core worker --beat --scheduler django --loglevel=info
     volumes:
-      - ./:/app
+      - ./static:/home/app/web/static
+      - ./media:/home/app/web/media
+      - ./locale:/home/app/web/locale
     env_file:
       - .env
     depends_on:
