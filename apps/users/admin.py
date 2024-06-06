@@ -5,7 +5,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from import_export import admin as ie_admin
@@ -44,6 +44,54 @@ class UserFaceImageFilter(admin.SimpleListFilter):
 
         if self.value() == "No":
             qs_filter = Q(Q(face_image__isnull=True) | Q(face_image__exact=""))
+            return queryset.filter(qs_filter)
+
+        return queryset  # Default value
+
+
+class FaceImageValidationFilter(admin.SimpleListFilter):
+    title = _("Face Image Validation")
+    parameter_name = "face_image_validation"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("enter_valid", _("Enter valid")),
+            ("exit_valid", _("Exit valid")),
+            ("both_valid", _("Both valid")),
+            ("both_invalid", _("Both invalid")),
+            ("enter_invalid", _("Enter invalid")),
+            ("exit_invalid", _("Exit invalid")),
+        )
+
+    def queryset(self, request, queryset):
+        # annotate face id log existence field to the queryset
+        queryset = queryset.annotate(
+            has_enter_log=Exists(
+                FaceIDLog.objects.filter(user=OuterRef("pk"), type=FaceIDLogTypes.ENTER).values("id")[:1]
+            ),
+            has_exit_log=Exists(
+                FaceIDLog.objects.filter(user=OuterRef("pk"), type=FaceIDLogTypes.EXIT).values("id")[:1]
+            ),
+        )
+        value = self.value()
+
+        if value == "enter_valid":
+            qs_filter = Q(has_enter_log=True)
+            return queryset.filter(qs_filter)
+        elif value == "exit_valid":
+            qs_filter = Q(has_exit_log=True)
+            return queryset.filter(qs_filter)
+        elif value == "both_valid":
+            qs_filter = Q(has_enter_log=True) & Q(has_exit_log=True)
+            return queryset.filter(qs_filter)
+        elif value == "both_invalid":
+            qs_filter = Q(has_enter_log=False) & Q(has_exit_log=False)
+            return queryset.filter(qs_filter)
+        elif value == "enter_invalid":
+            qs_filter = Q(has_enter_log=False)
+            return queryset.filter(qs_filter)
+        elif value == "exit_invalid":
+            qs_filter = Q(has_exit_log=False)
             return queryset.filter(qs_filter)
 
         return queryset  # Default value
@@ -224,6 +272,7 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
         UserFaceImageFilter,
         EnterTerminalFilter,
         ExitTerminalFilter,
+        FaceImageValidationFilter,
     )
     ordering = ("-id",)
     autocomplete_fields = ("educating_group",)
@@ -363,3 +412,4 @@ class FaceIDLogAdmin(admin.ModelAdmin):
         return mark_safe(f'<span style="color: {type_colors[obj.type]}"><b>{obj.get_type_display()}</b></span>')
 
     type_.short_description = _("Type")  # type: ignore
+    type_.admin_order_field = "type"  # type: ignore
