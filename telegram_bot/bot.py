@@ -12,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
 env.read_env()
 BOT_TOKEN = env.str("BOT_TOKEN")
+BOT_GROUP_ID = env.int("BOT_GROUP_ID")
 
 
 # Enable logging
@@ -28,6 +29,8 @@ def start(update: Update, context: CallbackContext) -> None:
 
     # send user's telegram ID to the user
     msg = f"<b>Assalom-u alaykum</b>, <i>{user.first_name}</i>!\n\n Sizning ID raqamingiz: <code>{user.id}</code>"
+    msg += "\n\nFarzandingizning ismi-sharifini kiriting:\n"
+    msg += "Masalan: Komiljonov Sarvarbek Yunusjon o'g'li"
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -38,8 +41,19 @@ def start(update: Update, context: CallbackContext) -> None:
 
 def echo(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
-    # send user's telegram ID to the user
-    msg = f"<b>Assalom-u alaykum</b>, <i>{user.first_name}</i>!\n\n Sizning ID raqamingiz: <code>{user.id}</code>"
+    # get message text from user
+    user_input = update.message.text
+    msg = f"<i>ID:</i>  <code>{user.id}</code>\n\n"
+    msg += f"<i>Farzand ismi:</i>  <b>{user_input}</b>"
+
+    context.bot.send_message(
+        chat_id=BOT_GROUP_ID,
+        text=msg,
+        parse_mode="HTML",
+    )
+
+    # send success message to user
+    msg = "<b><i>Rahmat, muvaffaqiyatli saqlandi</i></b>"
 
     context.bot.send_message(
         chat_id=update.effective_chat.id,
