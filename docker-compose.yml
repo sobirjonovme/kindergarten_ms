@@ -59,5 +59,13 @@ services:
     image: redis:5.0
     restart: always
 
+  telegram-bot:
+    restart: always
+    build:
+      context: ./
+      dockerfile: telegram_bot/Dockerfile
+    command: >
+      bash -c "python bot.py"
+
 volumes:
   postgres_data:

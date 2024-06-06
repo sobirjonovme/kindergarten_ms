@@ -1,8 +1,18 @@
 import logging
+from pathlib import Path
 
+import environ
 from telegram import Update
 from telegram.ext import (CallbackContext, CommandHandler, Filters,
                           MessageHandler, Updater)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# READING ENV
+env = environ.Env()
+env.read_env()
+BOT_TOKEN = env.str("BOT_TOKEN")
+
 
 # Enable logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -41,7 +51,7 @@ def echo(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("TOKEN")
+    updater = Updater(BOT_TOKEN)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
