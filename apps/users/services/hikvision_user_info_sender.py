@@ -52,8 +52,10 @@ class UserInfoSender:
                     "endTime": "2034-01-01T23:59:59",
                     "timeType": "local",
                 },
-                "gender": "male",
-                "localUIRight": False,  # is admin or not
+                "doorRight": "1",
+                "RightPlan": [{"doorNo": 1, "planTemplateNo": "1"}],
+                # "gender": "male",
+                # "localUIRight": False,  # is admin or not
             }
         }
         try:
@@ -90,8 +92,10 @@ class UserInfoSender:
                     "endTime": "2034-01-01T23:59:59",
                     "timeType": "local",
                 },
-                "gender": "male",
-                "localUIRight": False,  # is admin or not
+                "doorRight": "1",
+                "RightPlan": [{"doorNo": 1, "planTemplateNo": "1"}],
+                # "gender": "male",
+                # "localUIRight": False,  # is admin or not
             }
         }
 
