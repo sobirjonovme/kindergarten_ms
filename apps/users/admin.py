@@ -265,7 +265,9 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
         "type",
         "terminal_1",
         "terminal_2",
+        "parents_tg_ids",
     )
+    list_editable = ("parents_tg_ids",)
     list_display_links = ("id", "first_name", "last_name", "middle_name", "face_id")
     search_fields = (
         "id",
