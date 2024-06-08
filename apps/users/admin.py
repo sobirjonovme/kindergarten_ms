@@ -12,8 +12,9 @@ from import_export import admin as ie_admin
 from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget
 
+from apps.organizations.choices import OrganizationTypes
 from apps.organizations.models import EducatingGroup, Organization
-from apps.users.choices import FaceIDLogTypes
+from apps.users.choices import FaceIDLogTypes, UserTypes
 from apps.users.models import FaceIDLog, User
 from apps.users.tasks import send_user_info_to_hikvision
 
@@ -33,7 +34,11 @@ def fix_organization_via_group(modeladmin, request, queryset):
     for user in queryset:
         if user.educating_group and user.educating_group.organization:
             user.organization = user.educating_group.organization
-            user.save(update_fields=["organization"])
+            if user.organization.type == OrganizationTypes.SCHOOL:
+                user.type = UserTypes.STUDENT
+            elif user.organization.type == OrganizationTypes.KINDERGARTEN:
+                user.type = UserTypes.KINDERGARTENER
+            user.save(update_fields=["organization", "type"])
     modeladmin.message_user(request, str(_("Organization field is fixed")), messages.SUCCESS)
 
 
