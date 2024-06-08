@@ -20,6 +20,15 @@ from apps.users.tasks import send_user_info_to_hikvision
 FACE_ID_COLUMN_NAME = "Face ID"
 
 
+def make_sync_status_false(modeladmin, request, queryset):
+    queryset.update(
+        is_enter_terminal_synced=False,
+        is_enter_image_synced=False,
+        is_exit_terminal_synced=False,
+        is_exit_image_synced=False,
+    )
+
+
 def sync_with_terminals(modeladmin, request, queryset):
     for user in queryset:
         send_user_info_to_hikvision.delay(user.id)
@@ -242,7 +251,7 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
     show_change_form_export = False
 
     add_form = UserCreationForm
-    actions = (sync_with_terminals,)
+    actions = (sync_with_terminals, make_sync_status_false)
 
     list_display = (
         "id",
