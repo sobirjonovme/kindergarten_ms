@@ -29,6 +29,14 @@ def make_sync_status_false(modeladmin, request, queryset):
     )
 
 
+def fix_organization_via_group(modeladmin, request, queryset):
+    for user in queryset:
+        if user.educating_group and user.educating_group.organization:
+            user.organization = user.educating_group.organization
+            user.save(update_fields=["organization"])
+    modeladmin.message_user(request, str(_("Organization field is fixed")), messages.SUCCESS)
+
+
 def sync_with_terminals(modeladmin, request, queryset):
     for user in queryset:
         send_user_info_to_hikvision.delay(user.id)
@@ -251,7 +259,7 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
     show_change_form_export = False
 
     add_form = UserCreationForm
-    actions = (sync_with_terminals, make_sync_status_false)
+    actions = (sync_with_terminals, make_sync_status_false, fix_organization_via_group)
 
     list_display = (
         "id",
