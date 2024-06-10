@@ -1,8 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_jsonform.models.fields import ArrayField
+from solo.models import SingletonModel
 
 from apps.common.models import BaseModel
 from apps.users.choices import UserTypes
@@ -54,3 +56,16 @@ class WorkCalendar(BaseModel):
         verbose_name = _("Work Calendar")
         verbose_name_plural = _("Work Calendars")
         unique_together = ("worker_type", "month")
+
+
+class WorkingHourSettings(SingletonModel):
+    work_start_time = models.TimeField(verbose_name=_("Work Start Time"), default=timezone.now)
+    work_end_time = models.TimeField(verbose_name=_("Work End Time"), default=timezone.now)
+    last_calculation_date = models.DateField(verbose_name=_("Last Calculation Date"), null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("Working Hour Settings")
+        verbose_name_plural = _("Working Hour Settings")
+
+    def __str__(self):
+        return str(_("Working Hour Settings"))

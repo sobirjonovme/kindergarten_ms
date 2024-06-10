@@ -1,6 +1,8 @@
 from django.contrib import admin
+from solo.admin import SingletonModelAdmin
 
-from .models import EducatingGroup, Organization, WorkCalendar
+from .models import (EducatingGroup, Organization, WorkCalendar,
+                     WorkingHourSettings)
 
 
 # Register your models here.
@@ -37,3 +39,8 @@ class WorkCalendarAdmin(admin.ModelAdmin):
     list_filter = ("worker_type",)
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(WorkingHourSettings)
+class WorkingHourSettingsAdmin(SingletonModelAdmin):
+    pass

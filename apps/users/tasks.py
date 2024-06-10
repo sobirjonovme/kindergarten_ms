@@ -4,9 +4,11 @@ from django.utils import timezone
 from django.utils.translation import activate
 
 from apps.common.models import FaceIDSettings
+from apps.organizations.models import WorkingHourSettings
 from apps.users.choices import FaceIDLogTypes
-from apps.users.models import FaceIDLog
+from apps.users.models import FaceIDLog, User
 from apps.users.services.attendance import AttendanceService
+from apps.users.services.daily_presence import UserDailyPresence
 from apps.users.services.hikvision_user_info_sender import UserInfoSender
 from apps.users.services.parent_notification import ParentNotification
 
@@ -105,3 +107,38 @@ def send_user_info_to_hikvision(user_id):
             user_obj=user,
         )
         user_info_sender.send_user_data_to_hikvision()
+
+
+@shared_task
+def calculate_and_story_users_presence_time(dates: list = None):
+    working_hour_settings = WorkingHourSettings.get_solo()
+    work_start_time = working_hour_settings.work_start_time
+    work_end_time = working_hour_settings.work_end_time
+    if not work_start_time or not work_end_time:
+        return
+
+    if dates:
+        for target_date in dates:
+            users = User.objects.all()
+            for user in users:
+                UserDailyPresence(user, target_date, work_start_time, work_end_time).store_daily_presence()
+
+    # if dates is not provided,
+    # calculate presence time for all days starting from the last calculation date to yesterday
+    last_enter_log = FaceIDLog.objects.filter(type=FaceIDLogTypes.ENTER).order_by("-time").first()
+    last_exit_log = FaceIDLog.objects.filter(type=FaceIDLogTypes.EXIT).order_by("-time").first()
+    end_date = min(
+        timezone.localtime(last_enter_log.time).date(),
+        timezone.localtime(last_exit_log.time).date(),
+    )
+    start_date = working_hour_settings.last_calculation_date
+
+    while start_date <= end_date:
+        users = User.objects.all()
+        for user in users:
+            UserDailyPresence(user, start_date, work_start_time, work_end_time).store_daily_presence()
+
+        start_date += timezone.timedelta(days=1)
+
+    working_hour_settings.last_calculation_date = end_date
+    working_hour_settings.save(update_fields=["last_calculation_date"])

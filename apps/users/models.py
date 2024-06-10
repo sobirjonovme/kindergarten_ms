@@ -115,13 +115,15 @@ class FaceIDLog(BaseModel):
 
 class UserPresence(BaseModel):
     user = models.ForeignKey(verbose_name=_("User"), to=User, on_delete=models.CASCADE)
-    enter_at = models.DateTimeField(verbose_name=_("Enter at"), blank=True, null=True)
-    exit_at = models.DateTimeField(verbose_name=_("Exit at"), blank=True, null=True)
+    date = models.DateField(verbose_name=_("Date"))
+    enter_at = models.TimeField(verbose_name=_("Enter at"), blank=True, null=True)
+    exit_at = models.TimeField(verbose_name=_("Exit at"), blank=True, null=True)
     present_time = models.PositiveIntegerField(verbose_name=_("Present Time"), help_text=_("in hours"), default=0)
 
     class Meta:
         verbose_name = _("User Presence")
         verbose_name_plural = _("User Presences")
+        unique_together = ("user", "date")
 
     def __str__(self):
         return f"Presence #{self.id} - {self.user}"

@@ -451,17 +451,18 @@ class UserPresenceAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "user",
+        "date",
         "present_time",
         "enter_at",
         "exit_at",
     )
-    list_display_links = ("id", "user", "present_time")
+    list_display_links = ("id", "user", "date")
     autocomplete_fields = ("user",)
     search_fields = ("id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
     list_filter = ("enter_at",)
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
-    date_hierarchy = "enter_at"
+    date_hierarchy = "date"
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

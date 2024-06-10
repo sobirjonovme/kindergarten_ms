@@ -1,8 +1,22 @@
 from django.utils import timezone
 
 
+def find_diff_two_time(end_time, begin_time):
+    """
+    Find the difference between two times
+    """
+    if not end_time or not begin_time:
+        return None
+
+    end_time = timezone.datetime.combine(timezone.datetime.today(), end_time)
+    begin_time = timezone.datetime.combine(timezone.datetime.today(), begin_time)
+
+    diff = end_time - begin_time
+    return diff
+
+
 def get_last_month_date():
-    today = timezone.now().date()
+    today = timezone.localtime().date()
     last_month_date = today.replace(day=1) - timezone.timedelta(days=1)
     return last_month_date
 
