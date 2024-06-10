@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 from apps.users.models import FaceIDLog, User
 from apps.users.permissions import IsAdminUser
+from apps.users.serializers import UserShortSerializer
 
 from .serializers import YearMonthSerializer
 
@@ -35,12 +36,7 @@ class UserMonthlyAttendanceAPIView(APIView):
         data = {
             "year": year,
             "month": month,
-            "user": {
-                "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "middle_name": user.middle_name,
-            },
+            "user": UserShortSerializer(user, context={"request": request}).data,
             "total_attended_days": len(attendance_days),
             "attended_days": list(attendance_days),
         }

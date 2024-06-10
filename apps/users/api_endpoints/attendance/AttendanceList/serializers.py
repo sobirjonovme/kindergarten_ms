@@ -13,6 +13,7 @@ class AttendanceListSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "middle_name",
+            "face_image",
             "is_present",
         )
 
