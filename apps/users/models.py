@@ -114,7 +114,7 @@ class FaceIDLog(BaseModel):
 
 
 class UserPresence(BaseModel):
-    user = models.ForeignKey(verbose_name=_("User"), to=User, on_delete=models.CASCADE)
+    user = models.ForeignKey(verbose_name=_("User"), to=User, on_delete=models.CASCADE, related_name="user_presences")
     date = models.DateField(verbose_name=_("Date"))
     enter_at = models.TimeField(verbose_name=_("Enter at"), blank=True, null=True)
     exit_at = models.TimeField(verbose_name=_("Exit at"), blank=True, null=True)

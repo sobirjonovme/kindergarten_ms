@@ -314,6 +314,7 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
                     "face_image",
                     "face_id",
                     "gender",
+                    "salary",
                     "type",
                     "organization",
                     "educating_group",
