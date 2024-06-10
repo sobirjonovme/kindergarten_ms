@@ -15,6 +15,7 @@ class UsersMonthlyPaymentListSerializer(serializers.ModelSerializer):
             "last_name",
             "middle_name",
             "type",
+            "face_image",
             "monthly_payments",
         )
         ref_name = "UsersMonthlyPaymentListSerializer"
