@@ -42,6 +42,7 @@ class User(AbstractUser, BaseModel):
         verbose_name=_("Gender"), max_length=31, choices=GenderTypes.choices, null=True, blank=True
     )
     type = models.CharField(_("Type"), max_length=31, choices=UserTypes.choices, default=UserTypes.ADMIN)
+    salary = models.DecimalField(_("Salary"), max_digits=13, decimal_places=2, null=True, blank=True)
     organization = models.ForeignKey(
         verbose_name=_("Organization"), to="organizations.Organization", on_delete=models.CASCADE, blank=True, null=True
     )
@@ -110,3 +111,17 @@ class FaceIDLog(BaseModel):
 
     def __str__(self):
         return f"FaceID #{self.id} | {self.user}"
+
+
+class UserPresence(BaseModel):
+    user = models.ForeignKey(verbose_name=_("User"), to=User, on_delete=models.CASCADE)
+    enter_at = models.DateTimeField(verbose_name=_("Enter at"), blank=True, null=True)
+    exit_at = models.DateTimeField(verbose_name=_("Exit at"), blank=True, null=True)
+    present_time = models.PositiveIntegerField(verbose_name=_("Present Time"), help_text=_("in hours"), default=0)
+
+    class Meta:
+        verbose_name = _("User Presence")
+        verbose_name_plural = _("User Presences")
+
+    def __str__(self):
+        return f"Presence #{self.id} - {self.user}"

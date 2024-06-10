@@ -1,7 +1,11 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_jsonform.models.fields import ArrayField
 
 from apps.common.models import BaseModel
+from apps.users.choices import UserTypes
 
 from .choices import OrganizationTypes
 
@@ -29,3 +33,24 @@ class EducatingGroup(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class WorkCalendar(BaseModel):
+    worker_type = models.CharField(verbose_name=_("Type"), max_length=31, choices=UserTypes.choices)
+    month = models.DateField(verbose_name=_("Month"))
+    work_days = ArrayField(
+        verbose_name=_("Work Days"),
+        base_field=models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(31)]),
+        blank=True,
+        null=True,
+    )
+    daily_work_hours = models.IntegerField(verbose_name=_("Daily Work Hours"))
+
+    def clean(self):
+        if self.month and self.month.day != 1:
+            raise ValidationError({"month": _("Oyning birinchi kuni tanlanishi kerak")})
+
+    class Meta:
+        verbose_name = _("Work Calendar")
+        verbose_name_plural = _("Work Calendars")
+        unique_together = ("worker_type", "month")

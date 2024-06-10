@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import EducatingGroup, Organization
+from .models import EducatingGroup, Organization, WorkCalendar
 
 
 # Register your models here.
@@ -28,3 +28,12 @@ class EducatingGroupAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         qs = qs.select_related("organization")
         return qs
+
+
+@admin.register(WorkCalendar)
+class WorkCalendarAdmin(admin.ModelAdmin):
+    list_display = ("id", "worker_type", "month", "daily_work_hours", "work_days")
+    list_display_links = ("id", "worker_type", "month", "daily_work_hours")
+    list_filter = ("worker_type",)
+    ordering = ("-id",)
+    readonly_fields = ("created_at", "updated_at")

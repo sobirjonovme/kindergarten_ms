@@ -15,7 +15,7 @@ from import_export.widgets import ForeignKeyWidget
 from apps.organizations.choices import OrganizationTypes
 from apps.organizations.models import EducatingGroup, Organization
 from apps.users.choices import FaceIDLogTypes, UserTypes
-from apps.users.models import FaceIDLog, User
+from apps.users.models import FaceIDLog, User, UserPresence
 from apps.users.tasks import send_user_info_to_hikvision
 
 FACE_ID_COLUMN_NAME = "Face ID"
@@ -418,6 +418,7 @@ class FaceIDLogAdmin(admin.ModelAdmin):
         "is_notified",
     )
     list_display_links = ("id", "serial_no", "user", "time")
+    autocomplete_fields = ("user",)
     search_fields = ("id", "user__username", "user__first_name", "user__last_name")
     list_filter = ("created_at", "type", "is_notified")
     ordering = ("-id",)
@@ -438,3 +439,31 @@ class FaceIDLogAdmin(admin.ModelAdmin):
 
     type_.short_description = _("Type")  # type: ignore
     type_.admin_order_field = "type"  # type: ignore
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related("user")
+        return qs
+
+
+@admin.register(UserPresence)
+class UserPresenceAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "present_time",
+        "enter_at",
+        "exit_at",
+    )
+    list_display_links = ("id", "user", "present_time")
+    autocomplete_fields = ("user",)
+    search_fields = ("id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
+    list_filter = ("enter_at",)
+    ordering = ("-id",)
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "enter_at"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related("user")
+        return qs
