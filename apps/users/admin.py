@@ -73,6 +73,28 @@ class UserFaceImageFilter(admin.SimpleListFilter):
         return queryset  # Default value
 
 
+class IsPresentTodayFilter(admin.SimpleListFilter):
+    title = _("Is present today")
+    parameter_name = "is_present_today"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("Yes", _("Yes")),
+            ("No", _("No")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "Yes":
+            qs_filter = Q(is_present_today=True)
+            return queryset.filter(qs_filter)
+
+        if self.value() == "No":
+            qs_filter = Q(is_present_today=False)
+            return queryset.filter(qs_filter)
+
+        return queryset  # Default value
+
+
 class FaceImageValidationFilter(admin.SimpleListFilter):
     title = _("Face Image Validation")
     parameter_name = "face_image_validation"
@@ -296,6 +318,7 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
         "type",
         "organization",
         "educating_group",
+        IsPresentTodayFilter,
         UserFaceImageFilter,
         EnterTerminalFilter,
         ExitTerminalFilter,
