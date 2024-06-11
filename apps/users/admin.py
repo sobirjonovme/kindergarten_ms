@@ -5,7 +5,9 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.db.models import Exists, OuterRef, Q
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from import_export import admin as ie_admin
@@ -269,12 +271,13 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
     list_display = (
         "id",
         "user_pic",
+        "is_present_today",
         "first_name",
         "last_name",
         "middle_name",
-        "face_id",
-        "organization",
         "educating_group",
+        "organization",
+        "face_id",
         "type",
         "terminal_1",
         "terminal_2",
@@ -380,6 +383,13 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
 
     user_pic.short_description = _("User pic")  # type: ignore
 
+    def is_present_today(self, obj):
+        is_present = bool(obj.is_present_today)
+        return is_present
+
+    is_present_today.short_description = _("Is present today")  # type: ignore
+    is_present_today.boolean = True  # type: ignore
+
     def terminal_1(self, obj):
         is_complete = bool(obj.is_enter_terminal_synced and obj.is_enter_image_synced)
         return is_complete
@@ -397,6 +407,10 @@ class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUser
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.select_related("organization", "educating_group")
+        day_start = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+        qs = qs.annotate(
+            is_present_today=models.Exists(FaceIDLog.objects.filter(user=models.OuterRef("id"), time__gte=day_start))
+        )
         return qs
 
     def save_model(self, request, obj, form, change):
