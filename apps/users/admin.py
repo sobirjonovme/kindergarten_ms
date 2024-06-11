@@ -283,7 +283,7 @@ class UserCreationForm(forms.ModelForm):
 
 
 @admin.register(User)
-class UserAdmin(ie_admin.ImportExportMixin, ie_admin.ExportActionMixin, BaseUserAdmin):
+class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
     resource_class = UserResource
     show_change_form_export = False
 
@@ -457,7 +457,7 @@ class FaceIDLogAdmin(admin.ModelAdmin):
     )
     list_display_links = ("id", "serial_no", "user", "time")
     autocomplete_fields = ("user",)
-    search_fields = ("id", "user__username", "user__first_name", "user__last_name")
+    search_fields = ("user__id", "user__username", "user__first_name", "user__last_name")
     list_filter = ("created_at", "type", "is_notified")
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
@@ -496,7 +496,7 @@ class UserPresenceAdmin(admin.ModelAdmin):
     )
     list_display_links = ("id", "user", "date")
     autocomplete_fields = ("user",)
-    search_fields = ("id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
+    search_fields = ("user__id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
     list_filter = ("enter_at",)
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")

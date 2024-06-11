@@ -10,7 +10,7 @@ class MonthlyPaymentAdmin(admin.ModelAdmin):
     list_display_links = ("id", "user")
 
     list_filter = ("type", "is_completed")
-    search_fields = ("user__username", "user__first_name", "user__last_name", "user__middle_name")
+    search_fields = ("user__id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
 
     autocomplete_fields = ("user",)
     date_hierarchy = "paid_month"
