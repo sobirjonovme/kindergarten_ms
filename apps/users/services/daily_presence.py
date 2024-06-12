@@ -18,6 +18,17 @@ class UserDailyPresence:
         self.enter_time = None
         self.exit_time = None
 
+    def create_user_presence(self):
+        """
+        Create user presence for the given date
+        """
+        user_presence = UserPresence.objects.filter(user=self.user, date=self.date).first()
+        if user_presence:
+            return False
+
+        UserPresence.objects.create(user=self.user, date=self.date)
+        return True
+
     def find_enter_exit_time(self):
         """
         Find enter and exit time for the user

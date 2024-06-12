@@ -8,6 +8,7 @@ from apps.common.models import FaceIDSettings
 from apps.common.services.logging import LoggingException, TelegramLogging
 from apps.users.choices import FaceIDLogTypes
 from apps.users.models import FaceIDLog, User
+from apps.users.services.daily_presence import UserDailyPresence
 
 
 class AttendanceService:
@@ -139,6 +140,9 @@ class AttendanceService:
                 last_event_time = datetime.fromisoformat(last_event_time)
                 if current_time < last_event_time:
                     last_event_time = current_time
+
+                # create user presence for the day
+                UserDailyPresence(user, last_event_time.date()).create_user_presence()
 
                 log_record_list.append(
                     FaceIDLog(
