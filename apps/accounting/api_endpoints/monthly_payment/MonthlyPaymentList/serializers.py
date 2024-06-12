@@ -25,10 +25,10 @@ class UsersMonthlyPaymentListSerializer(serializers.ModelSerializer):
 
 class WorkerSalaryListSerializer(serializers.ModelSerializer):
     monthly_payments = MonthlyPaymentListSerializer(many=True)
-    # present_days = serializers.IntegerField(read_only=True, allow_null=True)
-    # worked_hours = serializers.IntegerField(read_only=True, allow_null=True)
-    # total_working_hours = serializers.IntegerField(read_only=True, allow_null=True)
-    # calculated_salary = serializers.SerializerMethodField()
+    present_days = serializers.SerializerMethodField()
+    worked_hours = serializers.SerializerMethodField()
+    total_working_days = serializers.SerializerMethodField()
+    calculated_salary = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -39,18 +39,38 @@ class WorkerSalaryListSerializer(serializers.ModelSerializer):
             "middle_name",
             "type",
             "face_image",
-            # "present_days",
-            # "worked_hours",
-            # "total_working_hours",
-            # "calculated_salary",
+            "present_days",
+            "worked_hours",
+            "total_working_days",
+            "calculated_salary",
             "monthly_payments",
         )
         ref_name = "WorkerSalaryMonthlyPaymentListSerializer"
 
-    # def get_calculated_salary(self, obj):
-    #     # TODO: create model to save old salary and calculate old monthly payment via that old salary
-    #
-    #     if obj.salary and obj.worked_hours and obj.total_working_hours:
-    #         # calculate monthly salary for worker
-    #         # round to the thousands room
-    #         return round(obj.salary * obj.worked_hours / obj.total_working_hours, -2)
+    def get_present_days(self, obj):
+        monthly_payment = obj.monthly_payments.first()
+        if not monthly_payment:
+            return
+
+        return monthly_payment.present_days
+
+    def get_worked_hours(self, obj):
+        monthly_payment = obj.monthly_payments.first()
+        if not monthly_payment:
+            return
+
+        return monthly_payment.worked_hours
+
+    def get_total_working_days(self, obj):
+        monthly_payment = obj.monthly_payments.first()
+        if not monthly_payment:
+            return
+
+        return monthly_payment.total_working_days
+
+    def get_calculated_salary(self, obj):
+        monthly_payment = obj.monthly_payments.first()
+        if not monthly_payment:
+            return
+
+        return monthly_payment.calculated_salary
