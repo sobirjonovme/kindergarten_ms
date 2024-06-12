@@ -13,6 +13,11 @@ class MonthlyPaymentListSerializer(serializers.ModelSerializer):
             "paid_month",
             "is_completed",
             "comment",
+            # salary calculation fields for WORKERS
+            "present_days",
+            "worked_hours",
+            "total_working_days",
+            "calculated_salary",
         )
         ref_name = "MonthlyPaymentListSerializer"
 

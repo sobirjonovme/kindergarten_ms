@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounting.models import MonthlyPayment
+from apps.common.services.logging import TelegramLogging
 from apps.common.services.telegram import send_telegram_message
 from apps.users.choices import UserTypes
 from apps.users.models import User
@@ -36,8 +37,12 @@ class TuitionFeeNotificationService:
         children = User.objects.filter(type__in=UserTypes.get_student_types())
 
         for child in children:
-            payments = MonthlyPayment.objects.filter(
-                user=child, paid_month__year=current_date.year, paid_month__month=current_date.month
-            )
-            if not payments:
-                self.send_child_tuition_fee_warning(child)
+            try:
+                payments = MonthlyPayment.objects.filter(
+                    user=child, paid_month__year=current_date.year, paid_month__month=current_date.month
+                )
+                if not payments:
+                    self.send_child_tuition_fee_warning(child)
+            except Exception as e:
+                tg_logger = TelegramLogging(e)
+                tg_logger.send_log_to_admin()

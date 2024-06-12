@@ -6,8 +6,7 @@ from rest_framework.validators import ValidationError
 from apps.accounting.filters import (YEAR_MONTH_FILTER_PARAMETERS,
                                      MonthlyPaymentFilter)
 from apps.accounting.models import MonthlyPayment
-from apps.organizations.models import WorkCalendar
-from apps.users.choices import UserShortTypes, UserTypes
+from apps.users.choices import UserShortTypes
 from apps.users.filters import USER_FILTER_PARAMETERS, UserFilter
 from apps.users.models import User
 from apps.users.permissions import IsAdminUser
@@ -54,70 +53,64 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
                 queryset=MonthlyPaymentFilter(data=self.request.query_params, queryset=MonthlyPayment.objects.all()).qs,
             ),
         )
-        users = users.annotate(
-            present_days=models.Count(
-                "user_presences",
-                filter=models.Q(user_presences__date__year=year, user_presences__date__month=month),
-                distinct=True,
-            ),
-        )
+        if user_type == UserShortTypes.STUDENT:
+            users = users.annotate(
+                present_days=models.Count(
+                    "user_presences",
+                    filter=models.Q(user_presences__date__year=year, user_presences__date__month=month),
+                    distinct=True,
+                ),
+            )
 
         # calculate total amount of payment
         self.total_payment = MonthlyPaymentFilter(
             data=self.request.query_params, queryset=MonthlyPayment.objects.filter(user__in=users)
         ).qs.aggregate(total_payment=models.Sum("amount"))["total_payment"]
 
-        teacher_work_calendar = WorkCalendar.objects.filter(
-            worker_type=UserTypes.TEACHER, month__year=year, month__month=month
-        ).first()
-        educator_work_calendar = WorkCalendar.objects.filter(
-            worker_type=UserTypes.EDUCATOR, month__year=year, month__month=month
-        ).first()
-
-        # calculate total working hours
-        if user_type == UserShortTypes.WORKER and teacher_work_calendar and educator_work_calendar:
-            teacher_working_hours = teacher_work_calendar.daily_work_hours * len(teacher_work_calendar.work_days)
-            educator_working_hours = educator_work_calendar.daily_work_hours * len(educator_work_calendar.work_days)
-
-            users = users.annotate(
-                worked_hours=models.Case(
-                    models.When(
-                        type=UserTypes.TEACHER,
-                        then=models.Sum(
-                            "user_presences__present_time",
-                            filter=models.Q(
-                                user_presences__date__year=year,
-                                user_presences__date__month=month,
-                                user_presences__date__day__in=teacher_work_calendar.work_days,
-                            ),
-                        ),
-                    ),
-                    models.When(
-                        type=UserTypes.EDUCATOR,
-                        then=models.Sum(
-                            "user_presences__present_time",
-                            filter=models.Q(
-                                user_presences__date__year=year,
-                                user_presences__date__month=month,
-                                user_presences__date__day__in=educator_work_calendar.work_days,
-                            ),
-                        ),
-                    ),
-                    default=models.Value(0),
-                ),
-                total_working_hours=models.Case(
-                    models.When(type=UserTypes.TEACHER, then=models.Value(teacher_working_hours)),
-                    models.When(type=UserTypes.EDUCATOR, then=models.Value(educator_working_hours)),
-                    default=models.Value(0),
-                ),
-            )
-
-            users = users.annotate(
-                worked_hours=models.Sum(
-                    "user_presences__present_time",
-                    filter=models.Q(user_presences__date__year=year, user_presences__date__month=month),
-                ),
-            )
+        # teacher_work_calendar = WorkCalendar.objects.filter(
+        #     worker_type=UserTypes.TEACHER, month__year=year, month__month=month
+        # ).first()
+        # educator_work_calendar = WorkCalendar.objects.filter(
+        #     worker_type=UserTypes.EDUCATOR, month__year=year, month__month=month
+        # ).first()
+        #
+        # # calculate total working hours
+        # if user_type == UserShortTypes.WORKER and teacher_work_calendar and educator_work_calendar:
+        #     teacher_working_hours = teacher_work_calendar.daily_work_hours * len(teacher_work_calendar.work_days)
+        #     educator_working_hours = educator_work_calendar.daily_work_hours * len(educator_work_calendar.work_days)
+        #
+        #     users = users.annotate(
+        #         worked_hours=models.Case(
+        #             models.When(
+        #                 type=UserTypes.TEACHER,
+        #                 then=models.Sum(
+        #                     "user_presences__present_time",
+        #                     filter=models.Q(
+        #                         user_presences__date__year=year,
+        #                         user_presences__date__month=month,
+        #                         user_presences__date__day__in=teacher_work_calendar.work_days,
+        #                     ),
+        #                 ),
+        #             ),
+        #             models.When(
+        #                 type=UserTypes.EDUCATOR,
+        #                 then=models.Sum(
+        #                     "user_presences__present_time",
+        #                     filter=models.Q(
+        #                         user_presences__date__year=year,
+        #                         user_presences__date__month=month,
+        #                         user_presences__date__day__in=educator_work_calendar.work_days,
+        #                     ),
+        #                 ),
+        #             ),
+        #             default=models.Value(0),
+        #         ),
+        #         total_working_hours=models.Case(
+        #             models.When(type=UserTypes.TEACHER, then=models.Value(teacher_working_hours)),
+        #             models.When(type=UserTypes.EDUCATOR, then=models.Value(educator_working_hours)),
+        #             default=models.Value(0),
+        #         ),
+        #     )
 
         return users
 
