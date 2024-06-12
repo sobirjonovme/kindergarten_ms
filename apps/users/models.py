@@ -42,6 +42,8 @@ class User(AbstractUser, BaseModel):
         verbose_name=_("Gender"), max_length=31, choices=GenderTypes.choices, null=True, blank=True
     )
     type = models.CharField(_("Type"), max_length=31, choices=UserTypes.choices, default=UserTypes.ADMIN)
+    work_start_time = models.TimeField(_("Work Start Time"), blank=True, null=True)
+    work_end_time = models.TimeField(_("Work End Time"), blank=True, null=True)
     salary = models.DecimalField(_("Salary"), max_digits=13, decimal_places=2, null=True, blank=True)
     organization = models.ForeignKey(
         verbose_name=_("Organization"), to="organizations.Organization", on_delete=models.CASCADE, blank=True, null=True
@@ -121,7 +123,11 @@ class UserPresence(BaseModel):
     date = models.DateField(verbose_name=_("Date"))
     enter_at = models.TimeField(verbose_name=_("Enter at"), blank=True, null=True)
     exit_at = models.TimeField(verbose_name=_("Exit at"), blank=True, null=True)
-    present_time = models.PositiveIntegerField(verbose_name=_("Present Time"), help_text=_("in hours"), default=0)
+    present_time = models.FloatField(verbose_name=_("Present Time"), help_text=_("in hours"), default=0)
+    # storing working hour settings in that day
+    work_start_time = models.TimeField(verbose_name=_("Work Start Time"), blank=True, null=True)
+    work_end_time = models.TimeField(verbose_name=_("Work End Time"), blank=True, null=True)
+    total_working_hours = models.FloatField(verbose_name=_("Total Working Hours"), help_text=_("in hours"), default=0)
 
     class Meta:
         verbose_name = _("User Presence")

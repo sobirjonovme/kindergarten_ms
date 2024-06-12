@@ -3,12 +3,15 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import activate
 
+from apps.accounting.services.salary_calculation import WorkerSalaryCalculation
 from apps.common.models import FaceIDSettings
+from apps.common.services.logging import TelegramLogging
 from apps.organizations.models import WorkingHourSettings
-from apps.users.choices import FaceIDLogTypes
+from apps.users.choices import FaceIDLogTypes, UserTypes
 from apps.users.models import FaceIDLog, User
 from apps.users.services.attendance import AttendanceService
-from apps.users.services.daily_presence import UserDailyPresence
+from apps.users.services.daily_presence import (UserDailyPresence,
+                                                recalculate_user_old_presences)
 from apps.users.services.hikvision_user_info_sender import UserInfoSender
 from apps.users.services.parent_notification import ParentNotification
 
@@ -112,16 +115,12 @@ def send_user_info_to_hikvision(user_id):
 @shared_task
 def calculate_and_story_users_presence_time(dates: list = None):
     working_hour_settings = WorkingHourSettings.get_solo()
-    work_start_time = working_hour_settings.work_start_time
-    work_end_time = working_hour_settings.work_end_time
-    if not work_start_time or not work_end_time:
-        return
 
     if dates:
         for target_date in dates:
             users = User.objects.all()
             for user in users:
-                UserDailyPresence(user, target_date, work_start_time, work_end_time).store_daily_presence()
+                UserDailyPresence(user, target_date).store_daily_presence()
 
     # if dates is not provided,
     # calculate presence time for all days starting from the last calculation date to yesterday
@@ -136,9 +135,34 @@ def calculate_and_story_users_presence_time(dates: list = None):
     while start_date <= end_date:
         users = User.objects.all()
         for user in users:
-            UserDailyPresence(user, start_date, work_start_time, work_end_time).store_daily_presence()
+            try:
+                UserDailyPresence(user, start_date).store_daily_presence()
+                if user.type in [UserTypes.TEACHER, UserTypes.EDUCATOR]:
+                    recalculate_user_old_presences(user)
+            except Exception as e:
+                tg_logger = TelegramLogging(e)
+                tg_logger.send_log_to_admin()
 
         start_date += timezone.timedelta(days=1)
+
+    """
+    Calculations for worker's working hours and salary
+    """
+    month_dates = [start_date]
+
+    today = timezone.localdate()
+    if start_date.month != today.month:
+        month_dates.append(today)
+
+    for month_date in month_dates:
+        users = User.objects.filter(type__in=[UserTypes.TEACHER, UserTypes.EDUCATOR])
+        for user in users:
+            try:
+                salary_calculator = WorkerSalaryCalculation(worker=user, month_date=month_date)
+                salary_calculator.calculate()
+            except Exception as e:
+                tg_logger = TelegramLogging(e)
+                tg_logger.send_log_to_admin()
 
     working_hour_settings.last_calculation_date = end_date
     working_hour_settings.save(update_fields=["last_calculation_date"])

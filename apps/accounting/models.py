@@ -28,6 +28,13 @@ class MonthlyPayment(BaseModel):
     paid_month = models.DateField(verbose_name=_("Paid Date"), default=timezone.now)
     is_completed = models.BooleanField(verbose_name=_("Is Completed"), default=False)
     comment = models.TextField(verbose_name=_("Comment"), blank=True, null=True)
+    # salary calculation fields for WORKERS
+    present_days = models.IntegerField(verbose_name=_("Present Days"), blank=True, null=True)
+    worked_hours = models.IntegerField(verbose_name=_("Worked Hours"), blank=True, null=True)
+    total_working_days = models.IntegerField(verbose_name=_("Total Working Days"), blank=True, null=True)
+    calculated_salary = models.DecimalField(
+        verbose_name=_("Calculated Salary"), max_digits=13, decimal_places=2, blank=True, null=True
+    )
 
     class Meta:
         verbose_name = _("Monthly Payment")

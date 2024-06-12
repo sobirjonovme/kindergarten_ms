@@ -341,6 +341,8 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
                     "face_id",
                     "gender",
                     "salary",
+                    "work_start_time",
+                    "work_end_time",
                     "type",
                     "organization",
                     "educating_group",
