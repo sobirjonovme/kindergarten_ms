@@ -21,7 +21,7 @@ class AttendanceService:
         self.last_sync_time = sync_time_str
 
         # Get the current local time
-        current_time = timezone.localtime()
+        current_time = timezone.localtime().replace(hour=23, minute=59, second=59)
         # Format the time without microseconds
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S%z")
         # Adjust the timezone offset format from +0500 to +05:00
@@ -135,6 +135,11 @@ class AttendanceService:
                     continue
 
                 # add log record to list
+                current_time = timezone.localtime()
+                last_event_time = datetime.fromisoformat(last_event_time)
+                if current_time < last_event_time:
+                    last_event_time = current_time
+
                 log_record_list.append(
                     FaceIDLog(
                         user=user,

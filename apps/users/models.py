@@ -84,8 +84,11 @@ class User(AbstractUser, BaseModel):
             raise ValidationError({"face_image": _("Rasm hajmi 200KB dan kam bo'lishi kerak")})
 
     def generate_full_name(self):
-        full_name = self.first_name
-        full_name += f" {self.last_name}" if self.last_name else ""
+        if self.last_name and self.last_name != "none":
+            full_name = f"{self.last_name} {self.first_name}"
+        else:
+            full_name = self.first_name
+
         return full_name
 
     @classmethod
