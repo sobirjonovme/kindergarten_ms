@@ -51,6 +51,28 @@ def sync_with_terminals(modeladmin, request, queryset):
     modeladmin.message_user(request, str(_("Sending user info to Hikvision is in progress")), messages.WARNING)
 
 
+class ParentTGIDFilter(admin.SimpleListFilter):
+    title = _("has parent tg id")
+    parameter_name = "has_parent_tg_id"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("Yes", _("Yes")),
+            ("No", _("No")),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "Yes":
+            qs_filter = Q(parents_tg_ids__len__gt=0)
+            return queryset.filter(qs_filter)
+
+        if self.value() == "No":
+            qs_filter = Q(parents_tg_ids__len=0)
+            return queryset.filter(qs_filter)
+
+        return queryset  # Default value
+
+
 class UserFaceImageFilter(admin.SimpleListFilter):
     title = _("has face image")
     parameter_name = "has_face_image"
@@ -313,6 +335,7 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
         "last_name",
         "middle_name",
         "face_id",
+        "parents_tg_ids",
     )
     list_filter = (
         "type",
@@ -323,6 +346,7 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
         EnterTerminalFilter,
         ExitTerminalFilter,
         FaceImageValidationFilter,
+        ParentTGIDFilter,
     )
     ordering = ("-id",)
     autocomplete_fields = ("educating_group",)
