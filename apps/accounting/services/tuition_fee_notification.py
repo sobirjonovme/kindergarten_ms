@@ -98,6 +98,8 @@ class TuitionFeeUpdateService:
 
             txt = self.generate_notification_text()
             for tg_chat_id in parent_tg_ids:
+                print("+++++++++++")
+                print(tg_chat_id)
                 send_telegram_message(self.bot_token, tg_chat_id, txt)
 
             self.tuition_fee.is_notified = True
