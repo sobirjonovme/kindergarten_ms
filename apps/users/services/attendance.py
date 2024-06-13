@@ -140,7 +140,7 @@ class AttendanceService:
                 face_id = info.get("employeeNoString")
                 serial_no = info.get("serialNo")
                 user_name = info.get("name")
-                face_image_url = info.get("faceURL")
+                face_image_url = info.get("pictureURL")
 
                 if not face_id:
                     continue
@@ -164,12 +164,12 @@ class AttendanceService:
 
                 # add log record to list
                 current_time = timezone.localtime()
-                last_event_time = datetime.fromisoformat(last_event_time)
-                if current_time < last_event_time:
-                    last_event_time = current_time
+                last_time_obj = datetime.fromisoformat(last_event_time)
+                if current_time < last_time_obj:
+                    last_time_obj = current_time
 
                 # create user presence for the day
-                UserDailyPresence(user, last_event_time.date()).create_user_presence()
+                UserDailyPresence(user, last_time_obj.date()).create_user_presence()
 
                 # download image
                 image_path = None
@@ -181,7 +181,7 @@ class AttendanceService:
                         user=user,
                         image=image_path,
                         type=self.log_type,
-                        time=last_event_time,
+                        time=last_time_obj,
                         serial_no=serial_no,
                         log_data=info,
                     )

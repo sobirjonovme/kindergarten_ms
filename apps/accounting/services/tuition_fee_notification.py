@@ -22,7 +22,8 @@ class TuitionFeeNotificationService:
             _(
                 "Xurmatli ota-ona! "
                 "Farzandingiz, {child_name}, uchun oylik to'lovni amalga oshirish muddati o'tib ketganligini ma'lum qilamiz"
-                "Iltimos, to'lovni amalga oshiring"
+                "Iltimos, to'lovni amalga oshiring\n\n"
+                "Xurmat bilan ma'muriyat"
             )
         ).format(child_name=child.generate_full_name())
 

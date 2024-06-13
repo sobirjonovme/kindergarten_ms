@@ -37,12 +37,11 @@ class ParentNotification:
 
     def send_notification(self, tg_chat_id):
         face_log = self.face_id_log
-        user = face_log.user
 
         msg = self.generate_notification_message()
-        if user.face_image:
+        if face_log.image:
             # send image with message
-            status, res = send_telegram_message_image(self.bot_token, tg_chat_id, user.face_image.path, msg)
+            status, res = send_telegram_message_image(self.bot_token, tg_chat_id, face_log.image.path, msg)
         else:
             status, res = send_telegram_message(self.bot_token, tg_chat_id, msg)
 
