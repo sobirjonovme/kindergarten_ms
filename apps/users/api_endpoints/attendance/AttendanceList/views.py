@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
 from apps.users.filters import ATTENDANCE_FILTER_PARAMETERS, UserFilter
-from apps.users.models import FaceIDLog, User
+from apps.users.models import User, UserPresence
 from apps.users.permissions import IsAdminUser
 
 from .serializers import AttendanceListSerializer, DateSerializer
@@ -29,8 +29,9 @@ class AttendanceListAPIView(ListAPIView):
         # get date query parameter
         date = self.request.query_params.get("date")
         # Add is_present field to each user
-        face_id_logs = FaceIDLog.objects.filter(time__date=date)
-        users_qs = users_qs.annotate(is_present=models.Exists(face_id_logs.filter(user=models.OuterRef("id"))))
+        user_presences = UserPresence.objects.filter(date=date)
+        # face_id_logs = FaceIDLog.objects.filter(time__date=date)
+        users_qs = users_qs.annotate(is_present=models.Exists(user_presences.filter(user=models.OuterRef("id"))))
 
         return users_qs
 
