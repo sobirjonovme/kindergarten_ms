@@ -13,19 +13,35 @@ class TuitionFeeNotificationService:
     def __init__(self):
         self.bot_token = settings.BOT_TOKEN
 
+    def generate_notification_text(self, child):
+        current_date = timezone.localdate()
+
+        if current_date.day <= 5:
+            txt = str(
+                _(
+                    "<b>Xurmatli ota-ona!</b> 👨‍👩‍👦\n"
+                    "🧑🏻‍🏫 Farzandingiz, <i>{child_name}</i>, uchun yangi oyga to'lovni amalga oshirishingizni iltimos qilamiz.💸\n\n"
+                    "🏫 <i>Xurmat bilan ma'muriyat!</i>"
+                )
+            ).format(child_name=child.generate_full_name())
+            return txt
+
+        txt = str(
+            _(
+                "<b>Xurmatli ota-ona!</b> 👨‍👩‍👦\n"
+                "🧑🏻‍🏫 Farzandingiz, <i>{child_name}</i>, uchun oylik to'lovni amalga oshirish muddati o'tib ketganligini ma'lum qilamiz\n"
+                "Iltimos, to'lovni amalga oshiring 💸\n\n"
+                "🏫 <i>Xurmat bilan ma'muriyat!</i>"
+            )
+        ).format(child_name=child.generate_full_name())
+        return txt
+
     def send_child_tuition_fee_warning(self, child):
         parent_tg_ids = child.parents_tg_ids
         if not parent_tg_ids:
             return
 
-        msg = str(
-            _(
-                "Xurmatli ota-ona! "
-                "Farzandingiz, {child_name}, uchun oylik to'lovni amalga oshirish muddati o'tib ketganligini ma'lum qilamiz"
-                "Iltimos, to'lovni amalga oshiring\n\n"
-                "Xurmat bilan ma'muriyat"
-            )
-        ).format(child_name=child.generate_full_name())
+        msg = self.generate_notification_text(child)
 
         for tg_chat_id in parent_tg_ids:
             send_telegram_message(self.bot_token, tg_chat_id, msg)
