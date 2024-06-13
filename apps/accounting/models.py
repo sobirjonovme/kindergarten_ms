@@ -27,6 +27,7 @@ class MonthlyPayment(BaseModel):
     amount = models.DecimalField(verbose_name=_("Amount"), max_digits=13, decimal_places=2)
     paid_month = models.DateField(verbose_name=_("Paid Date"), default=timezone.now)
     is_completed = models.BooleanField(verbose_name=_("Is Completed"), default=False)
+    is_notified = models.BooleanField(verbose_name=_("Is Notified"), default=False)
     comment = models.TextField(verbose_name=_("Comment"), blank=True, null=True)
     # salary calculation fields for WORKERS
     present_days = models.IntegerField(verbose_name=_("Present Days"), blank=True, null=True)

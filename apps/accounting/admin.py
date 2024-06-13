@@ -6,7 +6,7 @@ from .models import Expense, ExpenseType, MonthlyPayment
 # Register your models here.
 @admin.register(MonthlyPayment)
 class MonthlyPaymentAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "type", "amount", "paid_month", "is_completed")
+    list_display = ("id", "user", "type", "amount", "paid_month", "is_completed", "is_notified")
     list_display_links = ("id", "user")
 
     list_filter = ("type", "is_completed")

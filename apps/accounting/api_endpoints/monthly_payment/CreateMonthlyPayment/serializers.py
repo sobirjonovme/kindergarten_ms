@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from apps.accounting.models import MonthlyPayment
+from apps.accounting.tasks import send_tuition_fee_update_msg_to_parents
 
 
 class MonthlyPaymentCreateSerializer(serializers.ModelSerializer):
@@ -49,5 +50,8 @@ class MonthlyPaymentCreateSerializer(serializers.ModelSerializer):
 
         payment = MonthlyPayment(**validated_data)
         payment.save()
+
+        print("Sending tuition fee update message to parents")
+        send_tuition_fee_update_msg_to_parents.delay(payment.id)
 
         return payment

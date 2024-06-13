@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounting.models import MonthlyPayment
+from apps.common.services.common import format_number_readable
 from apps.common.services.logging import TelegramLogging
 from apps.common.services.telegram import send_telegram_message
 from apps.users.choices import UserTypes
@@ -63,3 +64,44 @@ class TuitionFeeNotificationService:
             except Exception as e:
                 tg_logger = TelegramLogging(e)
                 tg_logger.send_log_to_admin()
+
+
+class TuitionFeeUpdateService:
+    def __init__(self, tuition_fee):
+        self.bot_token = settings.BOT_TOKEN
+        self.tuition_fee = tuition_fee
+
+    def generate_notification_text(self):
+        tuition_fee = self.tuition_fee
+        child = tuition_fee.user
+
+        # get payment month and year like 2024-06
+        paid_month = tuition_fee.paid_month.strftime("%Y-%m")
+        money_amount = tuition_fee.amount
+        money_amount = format_number_readable(money_amount)
+
+        txt = str(
+            _(
+                "<b>Xurmatli ota-ona!</b> 👨‍👩‍👦\n"
+                "🧑🏻‍🏫 Farzandingiz, <i>{child_name}</i>ga {paid_month} oyi uchun qilgan to'lovingiz yangilandi\n"
+                "💸 Umumiy summa:   {money_amount} so'm\n\n"
+                "🏫 <i>Xurmat bilan ma'muriyat!</i>"
+            )
+        ).format(child_name=child.generate_full_name(), paid_month=paid_month, money_amount=money_amount)
+        return txt
+
+    def send_child_tuition_fee_update_msg_to_parents(self):
+        try:
+            parent_tg_ids = self.tuition_fee.user.parents_tg_ids
+            if not parent_tg_ids:
+                return
+
+            txt = self.generate_notification_text()
+            for tg_chat_id in parent_tg_ids:
+                send_telegram_message(self.bot_token, tg_chat_id, txt)
+
+            self.tuition_fee.is_notified = True
+            self.tuition_fee.save(update_fields=["is_notified"])
+        except Exception as e:
+            tg_logger = TelegramLogging(e)
+            tg_logger.send_log_to_admin()
