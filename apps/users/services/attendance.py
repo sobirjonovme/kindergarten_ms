@@ -13,6 +13,14 @@ from apps.users.models import FaceIDLog, User
 from apps.users.services.daily_presence import UserDailyPresence
 
 
+def format_datetime_to_str(datetime_obj):
+    # Format the time without microseconds
+    formatted_time = datetime_obj.strftime("%Y-%m-%dT%H:%M:%S%z")
+    # Adjust the timezone offset format from +0500 to +05:00
+    formatted_time = formatted_time[:-2] + ":" + formatted_time[-2:]
+    return formatted_time
+
+
 class AttendanceService:
     def __init__(self, ip_address, username, password, last_sync_time, log_type):
         self.base_url = ip_address
@@ -22,22 +30,21 @@ class AttendanceService:
 
         self.auth = HTTPDigestAuth(username, password)
 
-        sync_time_str = timezone.localtime(last_sync_time).isoformat()
+        last_sync_time = timezone.localtime(last_sync_time)
+        sync_time_str = format_datetime_to_str(last_sync_time)
         self.last_sync_time = sync_time_str
 
         # Get the current local time
         current_time = timezone.localtime().replace(hour=23, minute=59, second=59)
-        # Format the time without microseconds
-        formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S%z")
-        # Adjust the timezone offset format from +0500 to +05:00
-        formatted_time = formatted_time[:-2] + ":" + formatted_time[-2:]
+        formatted_time = format_datetime_to_str(current_time)
         self.end_time = formatted_time
 
     def save_last_sync_time(self, last_event_time):
         if not last_event_time:
             return
 
-        time_obj = datetime.fromisoformat(last_event_time)
+        # time_obj = datetime.fromisoformat(last_event_time)
+        time_obj = last_event_time
         face_id_settings = FaceIDSettings.get_solo()
 
         if self.log_type == FaceIDLogTypes.ENTER and time_obj > face_id_settings.enter_device_last_sync_time:
@@ -89,6 +96,7 @@ class AttendanceService:
         )
 
         if res.status_code != 200:
+            print(res.text)
             raise LoggingException(
                 message="Error in get_hikvision_device_response",
                 extra_kwargs={"status_code": res.status_code, "info": "Bad status code from Hikvision device"},
@@ -120,6 +128,7 @@ class AttendanceService:
         search_position = 0
 
         while True:
+            print(self.last_sync_time)
             acs_event = self.retrieve_hikvision_device_info(
                 start_time=self.last_sync_time,
                 end_time=self.end_time,
@@ -137,6 +146,11 @@ class AttendanceService:
             for info in info_list:  # noqa
                 # Process each info and store in database
                 last_event_time = info.get("time", None)
+                last_event_time = datetime.fromisoformat(last_event_time)
+                current_time = timezone.localtime()
+                if current_time < last_event_time:
+                    last_event_time = current_time
+
                 face_id = info.get("employeeNoString")
                 serial_no = info.get("serialNo")
                 user_name = info.get("name")
@@ -162,14 +176,8 @@ class AttendanceService:
                 if serial_no and FaceIDLog.objects.filter(serial_no=serial_no).exists():
                     continue
 
-                # add log record to list
-                current_time = timezone.localtime()
-                last_time_obj = datetime.fromisoformat(last_event_time)
-                if current_time < last_time_obj:
-                    last_time_obj = current_time
-
                 # create user presence for the day
-                UserDailyPresence(user, last_time_obj.date()).create_user_presence()
+                UserDailyPresence(user, last_event_time.date()).create_user_presence()
 
                 # download image
                 image_path = None
@@ -181,7 +189,7 @@ class AttendanceService:
                         user=user,
                         image=image_path,
                         type=self.log_type,
-                        time=last_time_obj,
+                        time=last_event_time,
                         serial_no=serial_no,
                         log_data=info,
                     )
