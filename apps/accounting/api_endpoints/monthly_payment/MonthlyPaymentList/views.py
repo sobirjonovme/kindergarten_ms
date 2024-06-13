@@ -32,6 +32,7 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
     permission_classes = (IsAdminUser,)
 
     total_payment = 0
+    total_payments_number = 0
 
     def get_serializer_class(self):
         user_type = self.request.query_params.get("type")
@@ -63,9 +64,14 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
             )
 
         # calculate total amount of payment
-        self.total_payment = MonthlyPaymentFilter(
+        monthly_payments = MonthlyPaymentFilter(
             data=self.request.query_params, queryset=MonthlyPayment.objects.filter(user__in=users)
-        ).qs.aggregate(total_payment=models.Sum("amount"))["total_payment"]
+        ).qs
+
+        self.total_payment = monthly_payments.aggregate(total_payment=models.Sum("amount"))["total_payment"]
+
+        self.total_payments_number = len(set(monthly_payments.values_list("user", flat=True)))
+        print(self.total_payments_number)
 
         # teacher_work_calendar = WorkCalendar.objects.filter(
         #     worker_type=UserTypes.TEACHER, month__year=year, month__month=month
@@ -136,10 +142,15 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
         if isinstance(res.data, list):
             res.data = {
                 "total_payment": self.total_payment,
+                "total_payments_number": self.total_payments_number,
                 "data": res.data,
             }
         elif isinstance(res.data, dict):
-            res.data = {"total_payment": self.total_payment, **res.data}
+            res.data = {
+                "total_payment": self.total_payment,
+                "total_payments_number": self.total_payments_number,
+                **res.data,
+            }
 
         return res
 
