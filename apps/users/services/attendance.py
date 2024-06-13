@@ -1,6 +1,8 @@
+import uuid
 from datetime import datetime
 
 import requests
+from django.conf import settings
 from django.utils import timezone
 from requests.auth import HTTPDigestAuth
 
@@ -17,6 +19,8 @@ class AttendanceService:
         self.username = username
         self.password = password
         self.log_type = log_type
+
+        self.auth = HTTPDigestAuth(username, password)
 
         sync_time_str = timezone.localtime(last_sync_time).isoformat()
         self.last_sync_time = sync_time_str
@@ -43,6 +47,27 @@ class AttendanceService:
         elif self.log_type == FaceIDLogTypes.EXIT and time_obj > face_id_settings.exit_device_last_sync_time:
             face_id_settings.exit_device_last_sync_time = time_obj
             face_id_settings.save(update_fields=["exit_device_last_sync_time"])
+
+    def download_user_face_image(self, image_url, user_name):
+        # Sending a GET request to download the image
+        response = requests.get(image_url, auth=self.auth)
+
+        # retrieve image extension
+        image_extension = image_url.split(".")[-1]
+        image_extension = image_extension.split("@")[0]
+
+        user_name = user_name.replace(" ", "_")
+        image_rel_path = f"face_id_logs/{user_name}_{uuid.uuid4().hex}.{image_extension}"
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            file_path = f"{settings.BASE_DIR}/media/{image_rel_path}"
+            # Saving the image to a file
+            with open(file_path, "wb") as f:
+                f.write(response.content)
+            return image_rel_path
+        else:
+            print("Failed to download the image. Status code:", response.status_code)
 
     def get_hikvision_device_response(self, start_time, end_time, search_position=0):
         res = requests.post(
@@ -114,6 +139,8 @@ class AttendanceService:
                 last_event_time = info.get("time", None)
                 face_id = info.get("employeeNoString")
                 serial_no = info.get("serialNo")
+                user_name = info.get("name")
+                face_image_url = info.get("faceURL")
 
                 if not face_id:
                     continue
@@ -144,9 +171,15 @@ class AttendanceService:
                 # create user presence for the day
                 UserDailyPresence(user, last_event_time.date()).create_user_presence()
 
+                # download image
+                image_path = None
+                if face_image_url:
+                    image_path = self.download_user_face_image(face_image_url, user_name)
+
                 log_record_list.append(
                     FaceIDLog(
                         user=user,
+                        image=image_path,
                         type=self.log_type,
                         time=last_event_time,
                         serial_no=serial_no,

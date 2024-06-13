@@ -103,6 +103,12 @@ class User(AbstractUser, BaseModel):
 
 class FaceIDLog(BaseModel):
     user = models.ForeignKey(verbose_name=_("User"), to="users.User", on_delete=models.CASCADE)
+    image = models.ImageField(
+        verbose_name=_("Image"),
+        upload_to="face_id_logs",
+        blank=True,
+        null=True,
+    )
     type = models.CharField(_("Type"), max_length=31, choices=FaceIDLogTypes.choices, null=True, blank=True)
     time = models.DateTimeField(_("Time"), default=timezone.now)
     serial_no = models.CharField(_("Serial No"), max_length=255, blank=True, null=True)
