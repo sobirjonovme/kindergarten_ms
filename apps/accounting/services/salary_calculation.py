@@ -32,13 +32,13 @@ class WorkerSalaryCalculation:
             date__day__in=work_calendar.work_days,
         )
         data = worker_presences.aggregate(
-            total_present_time=Sum("present_time"),
-            total_working_hours=Sum("total_working_hours"),
+            total_present_time=Sum("present_time"),  # how many hours the employee worked
+            total_working_hours=Sum("total_working_hours"),  # how many hours the employee should actually work
         )
-        total_present_time = data.get("total_present_time") or 0
-        total_working_hours = data.get("total_working_hours") or 0
-        total_present_days = worker_presences.count()
-        total_working_days = len(work_calendar.work_days)
+        total_present_time = data.get("total_present_time") or 0  # real
+        total_working_hours = data.get("total_working_hours") or 0  # in document
+        total_present_days = worker_presences.count()  # real
+        total_working_days = len(work_calendar.work_days)  # in document
         if total_working_hours == 0:
             salary = 0
         else:

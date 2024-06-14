@@ -425,7 +425,7 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
 
     def user_pic(self, obj):
         return mark_safe(
-            '<a href="{url}"><img src="{url}" width="50" height="50" />'.format(
+            '<a href="{url}" target="_blank"><img src="{url}" height="60" />'.format(
                 url=obj.face_image.url if obj.face_image else "/static/images/default.png"
             )
         )
@@ -456,9 +456,9 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         qs = qs.select_related("organization", "educating_group")
-        day_start = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = timezone.localdate()
         qs = qs.annotate(
-            is_present_today=models.Exists(FaceIDLog.objects.filter(user=models.OuterRef("id"), time__gte=day_start))
+            is_present_today=models.Exists(UserPresence.objects.filter(user=models.OuterRef("id"), date=today))
         )
         return qs
 
@@ -475,19 +475,29 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
 class FaceIDLogAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "serial_no",
+        "user_pic",
         "user",
+        "serial_no",
         "type_",
         "time",
         "is_notified",
     )
-    list_display_links = ("id", "serial_no", "user", "time")
+    list_display_links = ("id", "user", "time")
     autocomplete_fields = ("user",)
     search_fields = ("user__id", "user__username", "user__first_name", "user__last_name")
     list_filter = ("created_at", "type", "is_notified")
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
     date_hierarchy = "time"
+
+    def user_pic(self, obj):
+        return mark_safe(
+            '<a href="{url}" target="_blank"><img src="{url}" height="50" />'.format(
+                url=obj.image.url if obj.image else "/static/images/default.png"
+            )
+        )
+
+    user_pic.short_description = _("User pic")  # type: ignore
 
     def type_(self, obj):
         if not obj.type:
@@ -523,7 +533,7 @@ class UserPresenceAdmin(admin.ModelAdmin):
     list_display_links = ("id", "user", "date")
     autocomplete_fields = ("user",)
     search_fields = ("user__id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
-    list_filter = ("enter_at",)
+    list_filter = ("date", "user__type")
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")
     date_hierarchy = "date"

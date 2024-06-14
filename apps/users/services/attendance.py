@@ -128,7 +128,6 @@ class AttendanceService:
         search_position = 0
 
         while True:
-            print(self.last_sync_time)
             acs_event = self.retrieve_hikvision_device_info(
                 start_time=self.last_sync_time,
                 end_time=self.end_time,
@@ -207,6 +206,9 @@ class AttendanceService:
     def store_attendance_log(self):
         try:
             self._store_attendance_log()
+        # catch Connection error
+        except requests.exceptions.ConnectionError as e:  # noqa
+            pass
         except Exception as e:
             print("==========================================")
             print(e)

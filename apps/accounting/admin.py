@@ -6,10 +6,10 @@ from .models import Expense, ExpenseType, MonthlyPayment
 # Register your models here.
 @admin.register(MonthlyPayment)
 class MonthlyPaymentAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "type", "amount", "paid_month", "is_completed", "is_notified")
+    list_display = ("id", "user", "type", "amount", "is_completed", "paid_month", "is_notified")
     list_display_links = ("id", "user")
 
-    list_filter = ("type", "is_completed")
+    list_filter = ("user__type", "is_completed", "type", "is_notified")
     search_fields = ("user__id", "user__username", "user__first_name", "user__last_name", "user__middle_name")
 
     autocomplete_fields = ("user",)

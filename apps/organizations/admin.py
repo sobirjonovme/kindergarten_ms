@@ -34,8 +34,8 @@ class EducatingGroupAdmin(admin.ModelAdmin):
 
 @admin.register(WorkCalendar)
 class WorkCalendarAdmin(admin.ModelAdmin):
-    list_display = ("id", "worker_type", "month", "daily_work_hours", "work_days")
-    list_display_links = ("id", "worker_type", "month", "daily_work_hours")
+    list_display = ("id", "worker_type", "month", "work_days")
+    list_display_links = ("id", "worker_type", "month")
     list_filter = ("worker_type",)
     ordering = ("-id",)
     readonly_fields = ("created_at", "updated_at")

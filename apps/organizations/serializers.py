@@ -26,6 +26,5 @@ class WorkCalendarDetailSerializer(serializers.ModelSerializer):
             "worker_type",
             "year",
             "month",
-            "daily_work_hours",
             "work_days",
         )

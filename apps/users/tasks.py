@@ -18,6 +18,10 @@ from apps.users.services.parent_notification import ParentNotification
 
 @shared_task
 def get_and_store_attendance_log():
+    """
+    Get Face ID event logs from Hikvision device and store them in our system
+    """
+
     face_id_settings = FaceIDSettings.get_solo()
 
     if bool(
@@ -57,6 +61,9 @@ def get_and_store_attendance_log():
 
 @shared_task
 def send_face_id_notification_to_parents():
+    """
+    Send notification to parents when their children ENTER/EXIT via face ID terminal
+    """
     bot_token = settings.BOT_TOKEN
     if not bot_token:
         return
@@ -73,6 +80,10 @@ def send_face_id_notification_to_parents():
 
 @shared_task
 def send_user_info_to_hikvision(user_id):
+    """
+    Create new user or update existing user information in hikvision device
+    """
+
     from apps.users.models import User
 
     user = User.objects.get(id=user_id)
@@ -114,6 +125,11 @@ def send_user_info_to_hikvision(user_id):
 
 @shared_task
 def calculate_and_story_users_presence_time(dates: list = None):
+    """
+    Calculate user's presence time at the end of every day
+    Mainly for calculating worker's daily work hours
+    """
+
     working_hour_settings = WorkingHourSettings.get_solo()
 
     if dates:
@@ -124,9 +140,12 @@ def calculate_and_story_users_presence_time(dates: list = None):
 
     # if dates is not provided,
     # calculate presence time for all days starting from the last calculation date to yesterday
+    yesterday = timezone.localdate() - timezone.timedelta(days=1)
+    print(yesterday)
     last_enter_log = FaceIDLog.objects.filter(type=FaceIDLogTypes.ENTER).order_by("-time").first()
     last_exit_log = FaceIDLog.objects.filter(type=FaceIDLogTypes.EXIT).order_by("-time").first()
     end_date = min(
+        yesterday,
         timezone.localtime(last_enter_log.time).date(),
         timezone.localtime(last_exit_log.time).date(),
     )
@@ -136,18 +155,26 @@ def calculate_and_story_users_presence_time(dates: list = None):
         users = User.objects.all()
         for user in users:
             try:
-                UserDailyPresence(user, start_date).store_daily_presence()
-                if user.type in [UserTypes.TEACHER, UserTypes.EDUCATOR]:
-                    recalculate_user_old_presences(user)
+                UserDailyPresence(user=user, date=start_date).store_daily_presence()
             except Exception as e:
                 tg_logger = TelegramLogging(e)
                 tg_logger.send_log_to_admin()
 
         start_date += timezone.timedelta(days=1)
 
-    """
-    Calculations for worker's working hours and salary
-    """
+    # recalculate workers old DailyPresence objects
+    # if worked hour is 0
+    workers = User.objects.filter(type__in=[UserTypes.TEACHER, UserTypes.EDUCATOR])
+    for worker in workers:
+        try:
+            recalculate_user_old_presences(worker)
+        except Exception as e:
+            tg_logger = TelegramLogging(e)
+            tg_logger.send_log_to_admin()
+
+    # =========================================================================== #
+    # ========================= Calculate worker's salaries ===================== #
+    # =========================================================================== #
     month_dates = [start_date]
 
     today = timezone.localdate()
@@ -164,5 +191,6 @@ def calculate_and_story_users_presence_time(dates: list = None):
                 tg_logger = TelegramLogging(e)
                 tg_logger.send_log_to_admin()
 
+    # save current calculation time
     working_hour_settings.last_calculation_date = end_date
     working_hour_settings.save(update_fields=["last_calculation_date"])

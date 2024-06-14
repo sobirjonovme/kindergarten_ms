@@ -46,7 +46,7 @@ class UserDailyPresence:
 
     def calculate_total_working_hours(self):
         """
-        Calculate the amount of hours the user should actually work
+        Calculate the amount of hours the user should actually work in a day
         """
         work_start_time = self.user.work_start_time
         work_end_time = self.user.work_end_time
@@ -63,16 +63,17 @@ class UserDailyPresence:
         if not self.enter_time or not self.exit_time:
             return 0
 
+        if self.user.type not in UserTypes.get_worker_types():
+            # if user is not worker, no need extra calculations
+            diff = self.exit_time - self.enter_time
+            return round(diff.total_seconds() / 3600, 1)
+
+        # if the user is a worker
         work_start_time = self.user.work_start_time
         work_end_time = self.user.work_end_time
         if not work_start_time or not work_end_time:
             return 0
 
-        if self.user.type not in UserTypes.get_worker_types():
-            diff = self.exit_time - self.enter_time
-            return round(diff.total_seconds() / 3600, 1)
-
-        # if the user is a worker
         enter_diff = find_diff_two_time(end_time=self.enter_time, begin_time=work_start_time)
         if enter_diff < timedelta(minutes=20):
             time_begin = work_start_time
@@ -83,7 +84,7 @@ class UserDailyPresence:
             time_begin = self.enter_time
 
         exit_diff = find_diff_two_time(end_time=work_end_time, begin_time=self.exit_time)
-        if exit_diff < timedelta(minutes=5):
+        if exit_diff < timedelta(minutes=10):
             time_end = work_end_time
         elif exit_diff < timedelta(hours=1):
             time_end = work_end_time
