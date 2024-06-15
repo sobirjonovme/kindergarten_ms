@@ -193,3 +193,15 @@ def calculate_and_story_users_presence_time(dates: list = None):
     # save current calculation time
     working_hour_settings.last_calculation_date = end_date
     working_hour_settings.save(update_fields=["last_calculation_date"])
+
+
+@shared_task
+def force_recalculate_user_presence(user_presence_id):
+    """
+    Force recalculate user presence time
+    """
+    from apps.users.models import UserPresence
+
+    user_presence = UserPresence.objects.get(id=user_presence_id)
+
+    UserDailyPresence(user_presence.user, user_presence.date).store_daily_presence()

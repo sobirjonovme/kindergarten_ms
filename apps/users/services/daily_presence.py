@@ -75,20 +75,14 @@ class UserDailyPresence:
             return 0
 
         enter_diff = find_diff_two_time(end_time=self.enter_time, begin_time=work_start_time)
-        if enter_diff < timedelta(minutes=20):
+        if timedelta(minutes=0) <= enter_diff <= timedelta(minutes=20):
             time_begin = work_start_time
-        elif enter_diff < timedelta(hours=1):
-            time_begin = work_start_time
-            time_begin = time_begin.replace(hour=time_begin.hour + 1)
         else:
             time_begin = self.enter_time
 
         exit_diff = find_diff_two_time(end_time=work_end_time, begin_time=self.exit_time)
-        if exit_diff < timedelta(minutes=10):
+        if timedelta(minutes=0) <= exit_diff <= timedelta(minutes=10):
             time_end = work_end_time
-        elif exit_diff < timedelta(hours=1):
-            time_end = work_end_time
-            time_end = time_end.replace(hour=time_end.hour - 1)
         else:
             time_end = self.exit_time
 
@@ -119,8 +113,9 @@ class UserDailyPresence:
 
         user_presence.work_start_time = self.user.work_start_time
         user_presence.work_end_time = self.user.work_end_time
-        user_presence.present_time = self.calculate_worked_hour()
         user_presence.total_working_hours = self.calculate_total_working_hours()
+        worked_hour = self.calculate_worked_hour()
+        user_presence.present_time = min(worked_hour, user_presence.total_working_hours)
 
         if is_created:
             user_presence.save()

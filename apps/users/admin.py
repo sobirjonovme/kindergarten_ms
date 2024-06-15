@@ -32,6 +32,23 @@ def make_sync_status_false(modeladmin, request, queryset):
     )
 
 
+def set_daily_presence_full(modeladmin, request, queryset):
+    for user_presence in queryset:
+        user_presence.present_time = user_presence.total_working_hours
+        user_presence.save(update_fields=["present_time"])
+
+    modeladmin.message_user(request, str(_("User presence is set to full")), messages.SUCCESS)
+
+
+def recalculate_user_presence(modeladmin, request, queryset):
+    from apps.users.tasks import force_recalculate_user_presence
+
+    for user_presence in queryset:
+        force_recalculate_user_presence.delay(user_presence.id)
+
+    modeladmin.message_user(request, str(_("User presences is recalculated")), messages.SUCCESS)
+
+
 def fix_organization_via_group(modeladmin, request, queryset):
     for user in queryset:
         if user.educating_group and user.educating_group.organization:
@@ -522,6 +539,7 @@ class FaceIDLogAdmin(admin.ModelAdmin):
 
 @admin.register(UserPresence)
 class UserPresenceAdmin(admin.ModelAdmin):
+    actions = (set_daily_presence_full, recalculate_user_presence)
     list_display = (
         "id",
         "user",
@@ -529,6 +547,7 @@ class UserPresenceAdmin(admin.ModelAdmin):
         "present_time",
         "enter_at",
         "exit_at",
+        "total_working_hours",
     )
     list_display_links = ("id", "user", "date")
     autocomplete_fields = ("user",)
