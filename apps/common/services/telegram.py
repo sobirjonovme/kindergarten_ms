@@ -11,7 +11,7 @@ def send_telegram_message(bot_token, chat_id, text) -> typing.Tuple[bool, typing
         return True, msg.to_dict()
 
     except Exception as e:  # noqa
-        print(e)
+        # print(e)
         return False, e
 
 
@@ -25,5 +25,5 @@ def send_telegram_message_image(
         return True, msg.to_dict()
 
     except Exception as e:  # noqa
-        print(e)
+        # print(e)
         return False, e

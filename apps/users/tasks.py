@@ -141,7 +141,6 @@ def calculate_and_story_users_presence_time(dates: list = None):
     # if dates is not provided,
     # calculate presence time for all days starting from the last calculation date to yesterday
     yesterday = timezone.localdate() - timezone.timedelta(days=1)
-    print(yesterday)
     last_enter_log = FaceIDLog.objects.filter(type=FaceIDLogTypes.ENTER).order_by("-time").first()
     last_exit_log = FaceIDLog.objects.filter(type=FaceIDLogTypes.EXIT).order_by("-time").first()
     end_date = min(

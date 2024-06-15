@@ -32,5 +32,5 @@ class TelegramLogging:
                     msg += f"{key}: {value}\n"
             msg += f"\n<code>{tb_string[-4000 + len(msg):]}</code>"
             send_telegram_message(self.bot_token, self.chat_id, msg)
-        except Exception as e:
-            print(e)
+        except Exception as e:  # noqa
+            print(self.exception)

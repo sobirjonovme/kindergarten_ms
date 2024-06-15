@@ -20,19 +20,19 @@ class TuitionFeeNotificationService:
         if current_date.day <= 5:
             txt = str(
                 _(
-                    "<b>Xurmatli ota-ona!</b> 👨‍👩‍👦\n"
+                    "<b>Hurmatli ota-ona!</b> 👨‍👩‍👦\n"
                     "🧑🏻‍🏫 Farzandingiz, <i>{child_name}</i>, uchun yangi oyga to'lovni amalga oshirishingizni iltimos qilamiz.💸\n\n"
-                    "🏫 <i>Xurmat bilan ma'muriyat!</i>"
+                    "🏫 <i>Hurmat bilan ma'muriyat!</i>"
                 )
             ).format(child_name=child.generate_full_name())
             return txt
 
         txt = str(
             _(
-                "<b>Xurmatli ota-ona!</b> 👨‍👩‍👦\n"
+                "<b>Hurmatli ota-ona!</b> 👨‍👩‍👦\n"
                 "🧑🏻‍🏫 Farzandingiz, <i>{child_name}</i>, uchun oylik to'lovni amalga oshirish muddati o'tib ketganligini ma'lum qilamiz\n"
                 "Iltimos, to'lovni amalga oshiring 💸\n\n"
-                "🏫 <i>Xurmat bilan ma'muriyat!</i>"
+                "🏫 <i>Hurmat bilan ma'muriyat!</i>"
             )
         ).format(child_name=child.generate_full_name())
         return txt
@@ -82,10 +82,10 @@ class TuitionFeeUpdateService:
 
         txt = str(
             _(
-                "<b>Xurmatli ota-ona!</b> 👨‍👩‍👦\n"
+                "<b>Hurmatli ota-ona!</b> 👨‍👩‍👦\n"
                 "🧑🏻‍🏫 Farzandingiz, <i>{child_name}</i>ga {paid_month} oyi uchun qilgan to'lovingiz yangilandi\n"
                 "💸 Umumiy summa:   {money_amount} so'm\n\n"
-                "🏫 <i>Xurmat bilan ma'muriyat!</i>"
+                "🏫 <i>Hurmat bilan ma'muriyat!</i>"
             )
         ).format(child_name=child.generate_full_name(), paid_month=paid_month, money_amount=money_amount)
         return txt
