@@ -65,7 +65,7 @@ class UserDailyPresence:
 
         if self.user.type not in UserTypes.get_worker_types():
             # if user is not worker, no need extra calculations
-            diff = self.exit_time - self.enter_time
+            diff = find_diff_two_time(end_time=self.exit_time, begin_time=self.enter_time)
             return round(diff.total_seconds() / 3600, 1)
 
         # if the user is a worker
