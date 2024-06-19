@@ -35,7 +35,10 @@ class MonthlyPayment(BaseModel):
     total_working_days = models.IntegerField(verbose_name=_("Total Working Days"), blank=True, null=True)
     calculated_salary = models.DecimalField(
         verbose_name=_("Calculated Salary"), max_digits=13, decimal_places=2, blank=True, null=True
-    )
+    )  # worker salary according to working hours
+    full_salary = models.DecimalField(
+        verbose_name=_("Full Salary"), max_digits=13, decimal_places=2, blank=True, null=True
+    )  # worker real full salary for full month work
 
     class Meta:
         verbose_name = _("Monthly Payment")

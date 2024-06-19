@@ -13,8 +13,9 @@ class WorkerSalaryCalculation:
 
     def calculate(self):
         month_date = self.month_date
+        worker_full_salary = self.worker.salary
 
-        if not self.worker.salary:
+        if not worker_full_salary:
             return
 
         # check and get work calendar for the worker
@@ -42,7 +43,7 @@ class WorkerSalaryCalculation:
         if total_working_hours == 0:
             salary = 0
         else:
-            salary = float(self.worker.salary) * total_present_days / total_working_days
+            salary = float(worker_full_salary) * total_present_days / total_working_days
             salary = round(salary * total_present_time / total_working_hours, -2)
 
         # get or create monthly payment
@@ -58,6 +59,7 @@ class WorkerSalaryCalculation:
                 worked_hours=total_present_time,
                 total_working_days=total_working_days,
                 present_days=total_present_days,
+                full_salary=worker_full_salary,
                 calculated_salary=salary,
             )
             monthly_payment.save()
@@ -66,6 +68,7 @@ class WorkerSalaryCalculation:
             monthly_payment.total_working_days = total_working_days
             monthly_payment.present_days = total_present_days
             monthly_payment.calculated_salary = salary
+            monthly_payment.full_salary = worker_full_salary
             monthly_payment.save(
-                update_fields=["worked_hours", "total_working_days", "present_days", "calculated_salary"]
+                update_fields=["worked_hours", "total_working_days", "present_days", "calculated_salary", "full_salary"]
             )

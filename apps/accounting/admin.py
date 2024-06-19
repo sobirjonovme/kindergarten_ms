@@ -1,12 +1,33 @@
 from django.contrib import admin
 
+from apps.accounting.tasks import calculate_salary
+from apps.users.choices import UserTypes
+
 from .models import Expense, ExpenseType, MonthlyPayment
+
+
+# custom actions
+def recalculate_salaries(modeladmin, request, queryset):
+    workers_salaries = queryset.filter(user__type__in=[UserTypes.TEACHER, UserTypes.EDUCATOR])
+    for obj in workers_salaries:
+        calculate_salary.delay(user_id=obj.user_id, month_date=obj.paid_month)
 
 
 # Register your models here.
 @admin.register(MonthlyPayment)
 class MonthlyPaymentAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "type", "amount", "is_completed", "paid_month", "is_notified")
+    actions = (recalculate_salaries,)
+    list_display = (
+        "id",
+        "user",
+        "type",
+        "amount",
+        "is_completed",
+        "paid_month",
+        "is_notified",
+        "calculated_salary",
+        "full_salary",
+    )
     list_display_links = ("id", "user")
 
     list_filter = ("user__type", "is_completed", "type", "is_notified")

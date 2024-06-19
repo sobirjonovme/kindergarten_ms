@@ -29,6 +29,7 @@ class WorkerSalaryListSerializer(serializers.ModelSerializer):
     worked_hours = serializers.SerializerMethodField()
     total_working_days = serializers.SerializerMethodField()
     calculated_salary = serializers.SerializerMethodField()
+    full_salary = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -42,35 +43,47 @@ class WorkerSalaryListSerializer(serializers.ModelSerializer):
             "present_days",
             "worked_hours",
             "total_working_days",
+            "full_salary",
             "calculated_salary",
             "monthly_payments",
         )
         ref_name = "WorkerSalaryMonthlyPaymentListSerializer"
 
+    def to_representation(self, instance):
+        self.context["monthly_payment"] = instance.monthly_payments.first()
+        return super().to_representation(instance)
+
     def get_present_days(self, obj):
-        monthly_payment = obj.monthly_payments.first()
+        monthly_payment = self.context.get("monthly_payment")
         if not monthly_payment:
             return
 
         return monthly_payment.present_days
 
     def get_worked_hours(self, obj):
-        monthly_payment = obj.monthly_payments.first()
+        monthly_payment = self.context.get("monthly_payment")
         if not monthly_payment:
             return
 
         return monthly_payment.worked_hours
 
     def get_total_working_days(self, obj):
-        monthly_payment = obj.monthly_payments.first()
+        monthly_payment = self.context.get("monthly_payment")
         if not monthly_payment:
             return
 
         return monthly_payment.total_working_days
 
     def get_calculated_salary(self, obj):
-        monthly_payment = obj.monthly_payments.first()
+        monthly_payment = self.context.get("monthly_payment")
         if not monthly_payment:
             return
 
         return monthly_payment.calculated_salary
+
+    def get_full_salary(self, obj):
+        monthly_payment = self.context.get("monthly_payment")
+        if not monthly_payment:
+            return
+
+        return monthly_payment.full_salary

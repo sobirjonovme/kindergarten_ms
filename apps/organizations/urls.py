@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .api_endpoints import (EducatingGroupListAPIView, OrganizationListAPIView,
-                            WorkCalendarCreateAPIView, WorkCalendarListAPIView)
+                            WorkCalendarCreateAPIView, WorkCalendarListAPIView,
+                            WorkCalendarUpdateAPIView)
 
 app_name = "organizations"
 
@@ -11,4 +12,5 @@ urlpatterns = [
     # Work Calendar
     path("work-calendar/create/", WorkCalendarCreateAPIView.as_view(), name="work-calendar-create"),
     path("work-calendar/list/", WorkCalendarListAPIView.as_view(), name="work-calendar-list"),
+    path("work-calendar/<int:pk>/update/", WorkCalendarUpdateAPIView.as_view(), name="work-calendar-update"),
 ]
