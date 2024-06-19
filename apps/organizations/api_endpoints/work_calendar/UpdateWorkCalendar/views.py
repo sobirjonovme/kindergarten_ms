@@ -22,9 +22,9 @@ class WorkCalendarUpdateAPIView(UpdateAPIView):
     def get_object(self):
         obj = super().get_object()
 
-        today = timezone.localdate()
-        if obj.month.month != today.month and obj.month.year != today.year:
-            raise ValidationError(_("Only current month's work calendar can be updated"))
+        current_month_start = timezone.localdate().replace(day=1)
+        if obj.month < current_month_start:
+            raise ValidationError(_("Only current or future month's work calendar can be updated"))
 
         return obj
 
