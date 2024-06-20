@@ -4,9 +4,10 @@ from apps.accounting.serializers import MonthlyPaymentListSerializer
 from apps.users.models import User
 
 
-class UsersMonthlyPaymentListSerializer(serializers.ModelSerializer):
+class StudentsMonthlyPaymentListSerializer(serializers.ModelSerializer):
     monthly_payments = MonthlyPaymentListSerializer(many=True)
     present_days = serializers.IntegerField(read_only=True, allow_null=True)
+    remain_payment = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -18,9 +19,23 @@ class UsersMonthlyPaymentListSerializer(serializers.ModelSerializer):
             "type",
             "face_image",
             "present_days",
+            "remain_payment",
+            "tuition_fee",
             "monthly_payments",
         )
         ref_name = "UsersMonthlyPaymentListSerializer"
+
+    def to_representation(self, instance):
+        self.context["monthly_payment"] = instance.monthly_payments.first()
+        return super().to_representation(instance)
+
+    def get_remain_payment(self, user):
+        monthly_payment = self.context.get("monthly_payment")
+        if not monthly_payment or user.tuition_fee is None:
+            return
+
+        remain_payment = user.tuition_fee - monthly_payment.amount
+        return remain_payment
 
 
 class WorkerSalaryListSerializer(serializers.ModelSerializer):

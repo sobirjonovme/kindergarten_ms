@@ -11,7 +11,7 @@ from apps.users.filters import USER_FILTER_PARAMETERS, UserFilter
 from apps.users.models import User
 from apps.users.permissions import IsAdminUser
 
-from .serializers import (UsersMonthlyPaymentListSerializer,
+from .serializers import (StudentsMonthlyPaymentListSerializer,
                           WorkerSalaryListSerializer)
 
 USERS_PAYMENT_FILTER_PARAMETERS = [
@@ -36,9 +36,13 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
 
     def get_serializer_class(self):
         user_type = self.request.query_params.get("type")
+
+        # check if user_type is WORKER
         if user_type == UserShortTypes.WORKER:
             return WorkerSalaryListSerializer
-        return UsersMonthlyPaymentListSerializer
+
+        # so it is a student
+        return StudentsMonthlyPaymentListSerializer
 
     def get_queryset(self):
         year = self.request.query_params.get("year")

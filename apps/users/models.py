@@ -42,6 +42,7 @@ class User(AbstractUser, BaseModel):
         verbose_name=_("Gender"), max_length=31, choices=GenderTypes.choices, null=True, blank=True
     )
     type = models.CharField(_("Type"), max_length=31, choices=UserTypes.choices, default=UserTypes.ADMIN)
+    tuition_fee = models.DecimalField(_("Tuition Fee"), max_digits=13, decimal_places=2, null=True, blank=True)
     work_start_time = models.TimeField(_("Work Start Time"), blank=True, null=True)
     work_end_time = models.TimeField(_("Work End Time"), blank=True, null=True)
     salary = models.DecimalField(_("Salary"), max_digits=13, decimal_places=2, null=True, blank=True)
