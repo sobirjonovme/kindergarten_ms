@@ -18,7 +18,7 @@ from apps.organizations.choices import OrganizationTypes
 from apps.organizations.models import EducatingGroup, Organization
 from apps.users.choices import FaceIDLogTypes, UserTypes
 from apps.users.models import FaceIDLog, User, UserPresence
-from apps.users.tasks import send_user_info_to_hikvision
+from apps.users.tasks import send_user_info_to_hikvision,update_user_image_from_hikvision
 
 FACE_ID_COLUMN_NAME = "Face ID"
 
@@ -64,6 +64,20 @@ def fix_organization_via_group(modeladmin, request, queryset):
 def sync_with_terminals(modeladmin, request, queryset):
     for user in queryset:
         send_user_info_to_hikvision.delay(user.id)
+
+    modeladmin.message_user(request, str(_("Sending user info to Hikvision is in progress")), messages.WARNING)
+
+
+def update_image_from_terminal_enter(modeladmin, request, queryset):
+    for user in queryset:
+        update_user_image_from_hikvision.delay(user.id, FaceIDLogTypes.ENTER)
+
+    modeladmin.message_user(request, str(_("Sending user info to Hikvision is in progress")), messages.WARNING)
+
+
+def update_image_from_terminal_exit(modeladmin, request, queryset):
+    for user in queryset:
+        update_user_image_from_hikvision.delay(user.id, FaceIDLogTypes.EXIT)
 
     modeladmin.message_user(request, str(_("Sending user info to Hikvision is in progress")), messages.WARNING)
 
@@ -327,7 +341,10 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
     show_change_form_export = False
 
     add_form = UserCreationForm
-    actions = (sync_with_terminals, make_sync_status_false, fix_organization_via_group)
+    actions = (
+        sync_with_terminals, make_sync_status_false, fix_organization_via_group,
+        update_image_from_terminal_enter, update_image_from_terminal_exit
+    )
 
     list_display = (
         "id",

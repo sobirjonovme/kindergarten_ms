@@ -14,6 +14,8 @@ from apps.users.services.daily_presence import (UserDailyPresence,
                                                 recalculate_user_old_presences)
 from apps.users.services.hikvision_user_info_sender import UserInfoSender
 from apps.users.services.parent_notification import ParentNotification
+from apps.users.services.hikvision_user_delete import UserDeleteService
+from apps.users.services.hikvision_user_update import UserImageReceiver
 
 
 @shared_task
@@ -121,6 +123,64 @@ def send_user_info_to_hikvision(user_id):
             user_obj=user,
         )
         user_info_sender.send_user_data_to_hikvision()
+
+
+@shared_task
+def delete_unnecessary_users_from_hikvision():
+    """
+    Delete users from hikvision device if they are not in our system
+    """
+
+    face_id_settings = FaceIDSettings.get_solo()
+
+    if bool(
+            face_id_settings.enter_device_ip
+            and face_id_settings.enter_device_username
+            and face_id_settings.enter_device_password
+    ):
+        print("=========   Kirish   ===============")
+        user_delete_service = UserDeleteService(
+            ip_address=face_id_settings.enter_device_ip,
+            username=face_id_settings.enter_device_username,
+            password=face_id_settings.enter_device_password,
+        )
+        user_delete_service.delete_unnecessary_users_from_hikvision_device()
+
+    if bool(
+            face_id_settings.exit_device_ip
+            and face_id_settings.exit_device_username
+            and face_id_settings.exit_device_password
+    ):
+        print("=========   Chiqish   ===============")
+        user_delete_service = UserDeleteService(
+            ip_address=face_id_settings.exit_device_ip,
+            username=face_id_settings.exit_device_username,
+            password=face_id_settings.exit_device_password
+        )
+        user_delete_service.delete_unnecessary_users_from_hikvision_device()
+
+
+@shared_task
+def update_user_image_from_hikvision(user_id, device_type):
+    user = User.objects.get(id=user_id)
+    face_id_settings = FaceIDSettings.get_solo()
+
+    if device_type == FaceIDLogTypes.ENTER:
+        ip_address = face_id_settings.enter_device_ip
+        username = face_id_settings.enter_device_username
+        password = face_id_settings.enter_device_password
+    else:
+        ip_address = face_id_settings.exit_device_ip
+        username = face_id_settings.exit_device_username
+        password = face_id_settings.exit_device_password
+
+    user_image_receiver = UserImageReceiver(
+        ip_address=ip_address,
+        username=username,
+        password=password,
+        user_obj=user,
+    )
+    user_image_receiver.update_user_image_from_hikvision()
 
 
 @shared_task
