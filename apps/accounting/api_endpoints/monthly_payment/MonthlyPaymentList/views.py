@@ -2,6 +2,7 @@ from django.db import models
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView
 from rest_framework.validators import ValidationError
+from rest_framework.filters import SearchFilter
 
 from apps.accounting.filters import (YEAR_MONTH_FILTER_PARAMETERS,
                                      MonthlyPaymentFilter)
@@ -30,6 +31,8 @@ class UsersMonthlyPaymentListAPIView(ListAPIView):
 
     # serializer_class = UsersMonthlyPaymentListSerializer
     permission_classes = (IsAdminUser,)
+    filter_backends = (SearchFilter,)
+    search_fields = ("first_name", "last_name", "middle_name")
 
     total_payment = 0
     total_payments_number = 0

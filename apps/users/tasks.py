@@ -1,4 +1,5 @@
 from celery import shared_task
+from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import activate
@@ -123,6 +124,25 @@ def send_user_info_to_hikvision(user_id):
             user_obj=user,
         )
         user_info_sender.send_user_data_to_hikvision()
+
+
+@shared_task
+def send_unsynced_users_to_hikvision():
+    """
+    Send unsynced users to hikvision device
+    """
+
+    unsync_users = User.objects.filter(
+        Q(is_enter_terminal_synced=False) | Q(is_enter_image_synced=False) |
+        Q(is_exit_terminal_synced=False) | Q(is_exit_image_synced=False)
+    )
+
+    for user in unsync_users:
+        if user.face_image:
+            try:
+                send_user_info_to_hikvision(user.id)
+            except Exception as e:  # noqa
+                pass
 
 
 @shared_task

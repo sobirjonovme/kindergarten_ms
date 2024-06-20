@@ -3,6 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 
 from apps.users.filters import ATTENDANCE_FILTER_PARAMETERS, UserFilter
 from apps.users.models import User, UserPresence
@@ -16,8 +17,9 @@ class AttendanceListAPIView(ListAPIView):
     # pagination_class = None
     permission_classes = (IsAdminUser,)
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_class = UserFilter
+    search_fields = ("first_name", "last_name", "middle_name")
 
     # custom attribute to store the total amount of present users
     total_users = 0
