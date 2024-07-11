@@ -104,6 +104,9 @@ class UserDeleteService:
     def delete_unnecessary_users_from_hikvision_device(self):
         try:
             self._delete_unnecessary_users_from_hikvision_device()
+        # catch Connection error
+        except requests.exceptions.ConnectionError as e:  # noqa
+            pass
         except Exception as e:
             print("==========================================")
             print(e)
