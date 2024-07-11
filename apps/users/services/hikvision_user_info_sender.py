@@ -176,6 +176,9 @@ class UserInfoSender:
     def send_user_data_to_hikvision(self):
         try:
             self._send_user_data_to_hikvision()
+        # catch Connection error
+        except requests.exceptions.ConnectionError as e:  # noqa
+            pass
         except Exception as e:
             print("==========================================")
             print(e)

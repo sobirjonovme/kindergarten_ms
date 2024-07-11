@@ -99,15 +99,9 @@ class UserImageReceiver:
     def update_user_image_from_hikvision(self):
         try:
             self._update_user_image_from_hikvision()
+        # catch Connection error
+        except requests.exceptions.ConnectionError as e:  # noqa
+            pass
         except Exception as e:
             print("==========================================")
             print(e)
-
-
-if __name__ == "__main__":
-    base_url = "http://192.168.100.82"
-    username = "admin"
-    password = "Hunter2003"
-
-    user_info_receiver = UserInfoReceiver(base_url, username, password)
-    user_info_receiver.update_user_image_from_hikvision()
