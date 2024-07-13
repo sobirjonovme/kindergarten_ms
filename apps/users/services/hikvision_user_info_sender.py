@@ -128,7 +128,7 @@ class UserInfoSender:
             res = requests.put(url, files=files, auth=self.auth, timeout=10)
         # catch Connection error
         except requests.exceptions.ConnectionError as e:  # noqa
-            pass
+            return False, str(e)
         except Exception as e:
             # Log the exception and send the details to the admin
             logging = TelegramLogging(e)
