@@ -80,7 +80,7 @@ class User(AbstractUser, BaseModel):
     def clean_fields_via_type(self):
         if self.type in UserTypes.get_student_types():
             if self.salary:
-                exception = ValidationError({"salary": _("Salary cannot be set for students")}, code="")
+                exception = ValidationError({"salary": _("Salary cannot be set for students")}, code="cannot_be_set")
                 setattr(exception, "code", "cannot_be_set")
                 raise exception
             if self.work_start_time:
