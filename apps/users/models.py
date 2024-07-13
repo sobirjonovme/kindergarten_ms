@@ -77,7 +77,29 @@ class User(AbstractUser, BaseModel):
 
         return f"#{self.id} | {name}"
 
+    def clean_fields_via_type(self):
+        if self.type in UserTypes.get_student_types():
+            if self.salary:
+                exception = ValidationError({"salary": _("Salary cannot be set for students")}, code="")
+                setattr(exception, "code", "cannot_be_set")
+                raise exception
+            if self.work_start_time:
+                raise ValidationError({"work_start_time": _("Work start time cannot be set for students")})
+            if self.work_end_time:
+                raise ValidationError({"work_end_time": _("Work end time cannot be set for students")})
+        elif self.type in UserTypes.get_worker_types():
+            if not self.salary:
+                raise ValidationError({"salary": _("Salary must be provided for workers")})
+            if not self.work_start_time:
+                raise ValidationError({"work_start_time": _("Work start time must be provided for workers")})
+            if not self.work_end_time:
+                raise ValidationError({"work_end_time": _("Work end time must be provided for workers")})
+            if self.tuition_fee:
+                raise ValidationError({"tuition_fee": _("Tuition fee cannot be set for workers")})
+
     def clean(self):
+        self.clean_fields_via_type()
+
         # check face_id uniqueness
         if self.face_id and User.objects.filter(face_id=self.face_id).exclude(id=self.id).exists():
             raise ValidationError({"face_id": _("Kiritilgan Face ID allaqachon ishlatilgan")})
@@ -85,6 +107,13 @@ class User(AbstractUser, BaseModel):
         # check face image size less than 200KB
         if self.face_image and self.face_image.size > 200 * 1024:
             raise ValidationError({"face_image": _("Rasm hajmi 200KB dan kam bo'lishi kerak")})
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            if not self.username:
+                self.username = self.generate_unique_username()
+                self.set_password(uuid4().hex)
+        super().save(*args, **kwargs)
 
     def generate_full_name(self):
         if self.last_name and self.last_name != "none":

@@ -18,7 +18,8 @@ from apps.organizations.choices import OrganizationTypes
 from apps.organizations.models import EducatingGroup, Organization
 from apps.users.choices import FaceIDLogTypes, UserTypes
 from apps.users.models import FaceIDLog, User, UserPresence
-from apps.users.tasks import send_user_info_to_hikvision,update_user_image_from_hikvision
+from apps.users.tasks import (send_user_info_to_hikvision,
+                              update_user_image_from_hikvision)
 
 FACE_ID_COLUMN_NAME = "Face ID"
 
@@ -342,8 +343,11 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
 
     add_form = UserCreationForm
     actions = (
-        sync_with_terminals, make_sync_status_false, fix_organization_via_group,
-        update_image_from_terminal_enter, update_image_from_terminal_exit
+        sync_with_terminals,
+        make_sync_status_false,
+        fix_organization_via_group,
+        update_image_from_terminal_enter,
+        update_image_from_terminal_exit,
     )
 
     list_display = (
@@ -497,9 +501,6 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
         return qs
 
     def save_model(self, request, obj, form, change):
-        if not obj.pk:
-            obj.username = User.generate_unique_username()
-            obj.set_password(uuid4().hex)
         super().save_model(request, obj, form, change)
 
         send_user_info_to_hikvision.delay(obj.id)
@@ -507,58 +508,6 @@ class UserAdmin(ie_admin.ImportExportMixin, BaseUserAdmin):
     def get_fieldsets(self, request, obj=None):
         if not obj:
             return self.add_fieldsets
-
-        common_fieldsets = (
-            (None, {"fields": ("username", "password")}),
-            (
-                _("Personal info"),
-                {
-                    "fields": (
-                        "first_name",
-                        "last_name",
-                        "middle_name",
-                        "face_image",
-                        "face_id",
-                        "gender",
-                        "salary",
-                        "work_start_time",
-                        "work_end_time",
-                        "type",
-                        "organization",
-                        "educating_group",
-                        "parents_tg_ids",
-                    )
-                },
-            ),
-            (
-                _("Hikvision Sync"),
-                {
-                    "fields": (
-                        "is_enter_terminal_synced",
-                        "enter_terminal_sync_data",
-                        "is_enter_image_synced",
-                        "enter_image_sync_data",
-                        "is_exit_terminal_synced",
-                        "exit_terminal_sync_data",
-                        "is_exit_image_synced",
-                        "exit_image_sync_data",
-                    )
-                },
-            ),
-            (
-                _("Permissions"),
-                {
-                    "fields": (
-                        "is_active",
-                        "is_staff",
-                        "is_superuser",
-                        "groups",
-                        "user_permissions",
-                    ),
-                },
-            ),
-            (_("Important dates"), {"fields": ("last_login", "date_joined", "created_at", "updated_at")}),
-        )
 
         if obj.type in UserTypes.get_student_types():
             student_fieldsets = (
