@@ -48,7 +48,10 @@ class UserListAPIView(ListAPIView):
 
         return users_qs
 
-    @swagger_auto_schema(manual_parameters=USER_MANAGEMENT_FILTER_PARAMETERS)
+    @swagger_auto_schema(
+        manual_parameters=USER_MANAGEMENT_FILTER_PARAMETERS,
+        tags=["User Management"],
+    )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 

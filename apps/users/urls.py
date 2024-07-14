@@ -4,8 +4,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .api_endpoints import (AttendanceListAPIView, CreateAttendanceAPIView,
                             CustomTokenObtainPairView, MyProfileAPIView,
                             SetUserPhotoAPIView, UserCreateAPIView,
-                            UserListAPIView, UserMonthlyAttendanceAPIView,
-                            UserUpdateAPIView)
+                            UserDetailAPIView, UserListAPIView,
+                            UserMonthlyAttendanceAPIView, UserUpdateAPIView)
 
 app_name = "users"
 
@@ -20,6 +20,7 @@ urlpatterns = [
     # users management
     path("list/", UserListAPIView.as_view(), name="user-list"),
     path("create-user/", UserCreateAPIView.as_view(), name="user-create"),
+    path("<int:pk>/detail/", UserDetailAPIView.as_view(), name="user-detail"),
     path("<int:pk>/set-user-photo/", SetUserPhotoAPIView.as_view(), name="set-user-photo"),
     path("<int:pk>/update/", UserUpdateAPIView.as_view(), name="user-update"),
 ]

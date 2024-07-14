@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import UpdateAPIView
 from rest_framework.parsers import MultiPartParser
 
@@ -13,7 +14,11 @@ class SetUserPhotoAPIView(UpdateAPIView):
     permission_classes = (IsAdminUser,)
 
     parser_classes = (MultiPartParser,)
-    http_method_names = ["put"]
+    http_method_names = ("put",)
+
+    @swagger_auto_schema(tags=["User Management"])
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
 
 
 __all__ = ["SetUserPhotoAPIView"]

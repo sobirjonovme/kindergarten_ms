@@ -1,4 +1,5 @@
 from django.db import transaction
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import UpdateAPIView
 
 from apps.users.models import User
@@ -60,6 +61,7 @@ class UserUpdateAPIView(UpdateAPIView):
     permission_classes = (IsAdminUser,)
     http_method_names = ("put",)
 
+    @swagger_auto_schema(tags=["User Management"])
     @transaction.atomic
     def put(self, request, *args, **kwargs):
         return super().put(request, *args, **kwargs)

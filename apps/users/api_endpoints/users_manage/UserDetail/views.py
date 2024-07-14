@@ -1,16 +1,16 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import RetrieveAPIView
 
 from apps.users.models import User
 from apps.users.permissions import IsAdminUser
 
-from .serializers import UserCreateSerializer
+from .serializers import UserDetailSerializer
 
 
-class UserCreateAPIView(CreateAPIView):
+class UserDetailAPIView(RetrieveAPIView):
     """
-    <b>POST</b> request to create a new User.
-    <h2> if type is student / kindergartener, request body example:</h2>
+    <b>GET</b> request to get a user details.
+    <h2> if type is student / kindergartener, necessary response body fields:</h2>
     <pre>
     <code>
         {
@@ -18,11 +18,18 @@ class UserCreateAPIView(CreateAPIView):
             "first_name": "John",
             "last_name": "Doe",
             "middle_name": "Caffrey o'g'li",
+            "face_image": "image_url",
             "face_id": "97",
             "gender": "male",
             "tuition_fee": "string",
-            "organization": 1,
-            "educating_group": 1,
+            "organization": {
+                "id": 1,
+                "name": "Bog'cha"
+            },
+            "educating_group": {
+                "id": 1,
+                "name": "O'zbek tili o'rta guruh"
+            },
             "parents_tg_ids": [
                 "12312412",
                 "214124124"
@@ -31,7 +38,7 @@ class UserCreateAPIView(CreateAPIView):
     <br></code>
     </pre>
 
-    <h2> if type is teacher / educator / worker, request body example:</h2>
+    <h2> if type is teacher / educator / worker, necessary response body fields:</h2>
     <pre>
     <code>
         {
@@ -39,12 +46,16 @@ class UserCreateAPIView(CreateAPIView):
             "first_name": "John",
             "last_name": "Doe",
             "middle_name": "Caffrey o'g'li",
+            "face_image": "image_url",
             "face_id": "97",
             "gender": "male",
             "work_start_time": "08:30:00",
             "work_end_time": "17:00:00",
             "salary": "150",
-            "organization": 1,
+            "organization": {
+                "id": 1,
+                "name": "Bog'cha"
+            },
             "parents_tg_ids": [
                 "12312412",
                 "214124124"
@@ -55,13 +66,13 @@ class UserCreateAPIView(CreateAPIView):
     """
 
     queryset = User.objects.all()
-    serializer_class = UserCreateSerializer
+    serializer_class = UserDetailSerializer
 
     permission_classes = (IsAdminUser,)
 
     @swagger_auto_schema(tags=["User Management"])
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
-__all__ = ["UserCreateAPIView"]
+__all__ = ["UserDetailAPIView"]
