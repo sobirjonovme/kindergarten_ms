@@ -1,11 +1,12 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .api_endpoints import (AttendanceListAPIView, CreateAttendanceAPIView,
-                            CustomTokenObtainPairView, MyProfileAPIView,
-                            SetUserPhotoAPIView, UserCreateAPIView,
-                            UserDetailAPIView, UserListAPIView,
-                            UserMonthlyAttendanceAPIView, UserUpdateAPIView)
+from .api_endpoints import (AttendanceListAPIView, CheckFaceIDAPIView,
+                            CreateAttendanceAPIView, CustomTokenObtainPairView,
+                            MyProfileAPIView, SetUserPhotoAPIView,
+                            UserCreateAPIView, UserDetailAPIView,
+                            UserListAPIView, UserMonthlyAttendanceAPIView,
+                            UserUpdateAPIView)
 
 app_name = "users"
 
@@ -23,4 +24,5 @@ urlpatterns = [
     path("<int:pk>/detail/", UserDetailAPIView.as_view(), name="user-detail"),
     path("<int:pk>/set-user-photo/", SetUserPhotoAPIView.as_view(), name="set-user-photo"),
     path("<int:pk>/update/", UserUpdateAPIView.as_view(), name="user-update"),
+    path("check-face-id/", CheckFaceIDAPIView.as_view(), name="check-face-id"),
 ]
