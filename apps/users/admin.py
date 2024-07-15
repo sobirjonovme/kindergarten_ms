@@ -612,6 +612,7 @@ class FaceIDLogAdmin(admin.ModelAdmin):
         "type_",
         "time",
         "is_notified",
+        "is_notified_teacher",
     )
     list_display_links = ("id", "user", "time")
     autocomplete_fields = ("user",)

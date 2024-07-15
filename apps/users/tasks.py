@@ -1,6 +1,6 @@
 from celery import shared_task
-from django.db.models import Q
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import activate
 
@@ -13,10 +13,10 @@ from apps.users.models import FaceIDLog, User
 from apps.users.services.attendance import AttendanceService
 from apps.users.services.daily_presence import (UserDailyPresence,
                                                 recalculate_user_old_presences)
-from apps.users.services.hikvision_user_info_sender import UserInfoSender
-from apps.users.services.parent_notification import ParentNotification
 from apps.users.services.hikvision_user_delete import UserDeleteService
+from apps.users.services.hikvision_user_info_sender import UserInfoSender
 from apps.users.services.hikvision_user_update import UserImageReceiver
+from apps.users.services.parent_notification import ParentNotification
 
 
 @shared_task
@@ -72,11 +72,19 @@ def send_face_id_notification_to_parents():
         return
     activate("uz")
 
-    # today_beginning = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
     lower_bound = timezone.now() - timezone.timedelta(minutes=60)
-    face_id_logs = FaceIDLog.objects.filter(time__gte=lower_bound, is_notified=False).order_by("time")
 
-    for face_id_log in face_id_logs:
+    face_id_logs_for_teachers = FaceIDLog.objects.filter(
+        time__gte=lower_bound, is_notified_teacher=False, user__educating_group__teachers_tg_ids__len__gt=0
+    ).order_by("time")
+    for face_id_log in face_id_logs_for_teachers:
+        parent_notification = ParentNotification(bot_token=bot_token, face_id_log=face_id_log)
+        parent_notification.send_notification_to_teachers()
+
+    face_id_logs_for_parents = FaceIDLog.objects.filter(
+        time__gte=lower_bound, is_notified=False, user__parents_tg_ids__len__gt=0
+    ).order_by("time")
+    for face_id_log in face_id_logs_for_parents:
         parent_notification = ParentNotification(bot_token=bot_token, face_id_log=face_id_log)
         parent_notification.send_notification_to_parents()
 
@@ -133,8 +141,10 @@ def send_unsynced_users_to_hikvision():
     """
 
     unsync_users = User.objects.filter(
-        Q(is_enter_terminal_synced=False) | Q(is_enter_image_synced=False) |
-        Q(is_exit_terminal_synced=False) | Q(is_exit_image_synced=False)
+        Q(is_enter_terminal_synced=False)
+        | Q(is_enter_image_synced=False)
+        | Q(is_exit_terminal_synced=False)
+        | Q(is_exit_image_synced=False)
     )
 
     for user in unsync_users:
@@ -154,9 +164,9 @@ def delete_unnecessary_users_from_hikvision():
     face_id_settings = FaceIDSettings.get_solo()
 
     if bool(
-            face_id_settings.enter_device_ip
-            and face_id_settings.enter_device_username
-            and face_id_settings.enter_device_password
+        face_id_settings.enter_device_ip
+        and face_id_settings.enter_device_username
+        and face_id_settings.enter_device_password
     ):
         print("=========   Kirish   ===============")
         user_delete_service = UserDeleteService(
@@ -167,15 +177,15 @@ def delete_unnecessary_users_from_hikvision():
         user_delete_service.delete_unnecessary_users_from_hikvision_device()
 
     if bool(
-            face_id_settings.exit_device_ip
-            and face_id_settings.exit_device_username
-            and face_id_settings.exit_device_password
+        face_id_settings.exit_device_ip
+        and face_id_settings.exit_device_username
+        and face_id_settings.exit_device_password
     ):
         print("=========   Chiqish   ===============")
         user_delete_service = UserDeleteService(
             ip_address=face_id_settings.exit_device_ip,
             username=face_id_settings.exit_device_username,
-            password=face_id_settings.exit_device_password
+            password=face_id_settings.exit_device_password,
         )
         user_delete_service.delete_unnecessary_users_from_hikvision_device()
 

@@ -98,8 +98,6 @@ class User(AbstractUser, BaseModel):
                 raise ValidationError({"tuition_fee": _("Tuition fee cannot be set for workers")})
 
     def clean(self):
-        self.clean_fields_via_type()
-
         # check face_id uniqueness
         if self.face_id and User.objects.filter(face_id=self.face_id).exclude(id=self.id).exists():
             raise ValidationError({"face_id": _("Kiritilgan Face ID allaqachon ishlatilgan")})
@@ -143,7 +141,8 @@ class FaceIDLog(BaseModel):
     time = models.DateTimeField(_("Time"), default=timezone.now)
     serial_no = models.CharField(_("Serial No"), max_length=255, blank=True, null=True)
     log_data = models.JSONField(_("Log Data"), blank=True, null=True)
-    is_notified = models.BooleanField(_("Is Notified"), default=False)
+    is_notified = models.BooleanField(_("Is Notified Parent"), default=False)
+    is_notified_teacher = models.BooleanField(_("Is Notified Teacher"), default=False)
     notification_log = models.TextField(verbose_name=_("Notification Log"), blank=True, null=True)
 
     class Meta:

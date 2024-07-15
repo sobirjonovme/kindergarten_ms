@@ -24,8 +24,10 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 @admin.register(EducatingGroup)
 class EducatingGroupAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "organization")
+    list_display = ("id", "name", "organization", "teachers_tg_ids")
     list_display_links = ("id", "name", "organization")
+    list_editable = ("teachers_tg_ids",)
+
     list_filter = ("organization",)
     ordering = ("-id",)
     search_fields = (

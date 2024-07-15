@@ -30,6 +30,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
 
         try:
+            instance.clean_fields_via_type()
             instance.clean()
         except DjangoValidationError as e:
             raise ValidationError(detail=serializers.as_serializer_error(e))

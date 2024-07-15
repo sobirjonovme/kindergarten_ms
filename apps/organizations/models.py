@@ -27,6 +27,12 @@ class Organization(BaseModel):
 class EducatingGroup(BaseModel):
     name = models.CharField(max_length=255)
     organization = models.ForeignKey(verbose_name=_("Organization"), to=Organization, on_delete=models.CASCADE)
+    teachers_tg_ids = ArrayField(
+        verbose_name=_("Teachers Telegram IDs"),
+        base_field=models.CharField(max_length=31, blank=True, null=True),
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         verbose_name = _("Educating Group")

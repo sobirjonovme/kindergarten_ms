@@ -25,6 +25,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = User(**data)
+        user.clean_fields_via_type()
         user.clean()
 
         return data
